@@ -27,24 +27,32 @@ class Var {
     int* ptrVal;
     std::vector<int> arrVal;
     Type type;
+    bool isInit;
 public:
     Var(int int_val) {
         type = Type::T_INT;
         intVal = int_val;
         ptrVal = nullptr;
         arrVal = nullptr;
+        isInit = false;
     }
     Var(int* ptr_val) {
         type = Type::T_PTR;
         intVal = 0;
         ptrVal = ptr_val;
         arrVal = nullptr;
+        isInit = false;
     }
     Var(std::vector<int> arrVal) {
         type = Type::T_ARR;
         intVal = 0;
         ptrVal = nullptr;
         arrVal = std::vector<int>(arrVal);
+        isInit = false; // сделать isInit для каждого элемента массива?
+        // например, с помощью vector<pair<int, bool> >, или иначе...
+    }
+    Type getType() {
+        return type;
     }
     int getIntVal() {
         if (type != Type::T_INT)
@@ -68,6 +76,7 @@ public:
                 throw std::logic_error("Escape from the bounds of array");
         }
     }
+
     void setIntVal(int newVal) {
         if (type != Type::T_INT)
             throw std::logic_error("Invalid value's type");
@@ -95,9 +104,7 @@ public:
 class Block : public Operator {
 private:
     std::list<Operator*> ops;
-    std::map<std::string, int> intVars;
-    std::map<std::string, size_t> ptrVars;
-    std::map<std::string, std::vector<int> > arrVars;
+    std::map<std::string, Var> vars;
     Block* parentBlock;
 
     void addOperator(Operator* op) {
@@ -136,43 +143,21 @@ public:
             (*i)->run(this);
         }
     }
-    // to do: один метод findVar! который возвращает непонятно что...
-    // hint: сделать класс из полей int, int*, vector<int>
-    std::map<std::string, int>::iterator findIntVar(std::string id) {
-        // реализовать обход всех parent-блоков и поиск в них переменной по id
+    std::map<std::string, Var>::iterator findVar(std::string id) {
         Block* currBlock = this;
         // будем возвращать intVars.end() (для блока, из которого вызывается поиск),
         // если указанная переменная не найдена
-        std::map<std::string, int>::iterator result = this->intVars.end();
-        while (result == intVars.end() && currBlock != nullptr) {
-            if (currBlock->intVars.find(id) != currBlock->intVars.end())
-                result = currBlock->intVars.find(id); // win!
+        std::map<std::string, Var>::iterator result = this->vars.end();
+        while (result == vars.end() && currBlock != nullptr) {
+            if (currBlock->vars.find(id) != currBlock->vars.end())
+                result = currBlock->vars.find(id); // win!
             else
                 currBlock = currBlock->parentBlock;
         }
         return result;
     }
-    std::map<std::string, size_t>::iterator findPtrVar(std::string id) {
-        Block* currBlock = this;
-        std::map<std::string, size_t>::iterator result = this->ptrVars.end();
-        while (result == ptrVars.end() && currBlock != nullptr) {
-            if (currBlock->intVars.find(id) != currBlock->intVars.end())
-                result = currBlock->ptrVars.find(id);
-            else
-                currBlock = currBlock->parentBlock;
-        }
-        return result;
-    }
-    std::map<std::string, std::vector<int> >::iterator findArrVar(std::string id) {
-        Block* currBlock = this;
-        std::map<std::string, std::vector<int> >::iterator result = this->arrVars.end();
-        while (result == arrVars.end() && currBlock != nullptr) {
-            if (currBlock->intVars.find(id) != currBlock->intVars.end())
-                result = currBlock->arrVars.find(id);
-            else
-                currBlock = currBlock->parentBlock;
-        }
-        return result;
+    std::map<std::string, Var>::iterator getVarsEnd() {
+        return vars.end();
     }
 };
 
@@ -189,12 +174,12 @@ public:
     virtual ~ExprOperator() { delete expr; }
     virtual void run(Block* parentBlock = nullptr) {
         AssignExpression* probAssign = dynamic_cast<AssignExpression*>(expr);
-        FunctionCall* probFunc = dynamic_cast<FunctionCall*>(expr);
+        FunctionCall* probFunCall = dynamic_cast<FunctionCall*>(expr);
         if (probAssign) {
             probAssign->run(parentBlock);
         }
-        if (probFunc) {
-            probFunc->run(parentBlock);
+        if (probFunCall) {
+            probFunCall->run(parentBlock);
         }
     }
 };
@@ -288,7 +273,12 @@ public:
     }
     virtual ~AssignExpression() { delete value; }
     void run(Block* parentBlock = nullptr) {
-        std::string idForArr = ID.erase(ID.find("["), ID.find("]")); // a[12] --> a
+        int arrIndex = -1; // only for array
+        if (ID.find("[") != -1) {
+            arrIndex = std::stoi(ID.substr(ID.find("["), ID.find("]"))); // или find("]") - 1?
+        }
+        std::string clearID = ID.erase(ID.find("["), ID.find("]")); // a[12] --> a
+
         // value may be: unaryexpr, binaryexpr, value, variable, funccal
         Value* probValue = dynamic_cast<Value*>(value);
         Variable* probVar = dynamic_cast<Variable*>(value);
@@ -296,11 +286,40 @@ public:
         UnaryExpression* probUnaryExpr = dynamic_cast<UnaryExpression*>(value);
         BinaryExpression* probBinExpr = dynamic_cast<BinaryExpression*>(value);
 
+        std::map<std::string, Var>::iterator iterVar = parentBlock->findVar(clearID);
+        if (iterVar == parentBlock->getVarsEnd())
+            throw std::logic_error("Unknown variable");
+
         if (probValue) {
-            auto iterInt = parentBlock->findIntVar(ID);
-            auto iterPtr = parentBlock->findPtrVar(ID);
-            auto iterArr = parentBlock->findArrVar(idForArr);
+            switch (iterVar->second.getType()) {
+                case Type::T_INT : {
+                    iterVar->second.setIntVal(probValue->getVal());
+                }
+                case Type::T_PTR : {
+                    throw std::logic_error("Assign int to ptr");
+                }
+                case Type::T_ARR : {
+                    if (arrIndex != -1)
+                        iterVar->second.setArrAtVal(probValue->getVal(), arrIndex);
+                    else
+                        throw std::logic_error("Assign int to arr without index");
+                }
+            }
         }
+        if (probVar) {
+            switch (iterVar->second.getType()) {
+                case Type::T_INT : {
+
+                }
+                case Type::T_PTR : {
+
+                }
+                case Type::T_ARR : {
+
+                }
+            }
+        }
+
     }
 };
 
