@@ -50,7 +50,7 @@ OP2:    IF '(' EXPR ')' OP              { $$ = new IfOperator($3, $5, new Block(
 OP:     OP1 | OP2 ;
 
 EXPR:   EXPR1
-|       ID '=' EXPR                     { $$ = new AssignExpression($1, $3); }
+|       ID '=' EXPR2                    { $$ = new AssignExpression($1, $3); }
 
 
 EXPR1:  EXPR2
