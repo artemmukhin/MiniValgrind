@@ -51,6 +51,8 @@ OP:     OP1 | OP2 ;
 
 EXPR:   EXPR1
 |       ID '=' EXPR2                    { $$ = new AssignExpression($1, $3); }
+|       ID '[' EXPR2 ']' '=' EXPR2      { $$ = new AssignExpression($1, $6, $3); }
+;
 
 
 EXPR1:  EXPR2
@@ -58,8 +60,9 @@ EXPR1:  EXPR2
 |       EXPR1 LE EXPR2                  { $$ = new BinaryExpression("<=", $1, $3); }
 |       EXPR1 GE EXPR2                  { $$ = new BinaryExpression(">=", $1, $3); }
 |       EXPR1 NE EXPR2                  { $$ = new BinaryExpression("!=", $1, $3); }
-|       EXPR1 '>' EXPR2                 { $$ = new BinaryExpression(">", $1, $3); }
-|       EXPR1 '<' EXPR2                 { $$ = new BinaryExpression("<", $1, $3); }
+|       EXPR1 '>' EXPR2                 { $$ = new BinaryExpression(">", $1, $3);  }
+|       EXPR1 '<' EXPR2                 { $$ = new BinaryExpression("<", $1, $3);  }
+|       ID '[' EXPR2 ']'                { $$ = new BinaryExpression("[]", $1, $3); }
 |       DEF
 ;
 

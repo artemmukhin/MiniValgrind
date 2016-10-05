@@ -10,16 +10,21 @@ enum Type {T_INT, T_PTR, T_ARR};
 
 
 class Operator {
-protected: Operator() {}
-public: virtual ~Operator() {}
+protected:
+    Operator() {}
+public:
+    virtual ~Operator() {}
     virtual void print(int indent = 0) = 0;
     virtual void run(Block* parentBlock = nullptr) = 0;
 };
 
 class Expression {
-protected: Expression() {}
-public: virtual ~Expression() {}
+protected:
+    Expression() {}
+public:
+    virtual ~Expression() {}
     virtual void print() = 0;
+    virtual int calculate(Block* parentBlock = nullptr) = 0;
 };
 
 class Var {
@@ -33,14 +38,12 @@ public:
         type = Type::T_INT;
         intVal = int_val;
         ptrVal = nullptr;
-        arrVal = nullptr;
         isInit = false;
     }
     Var(int* ptr_val) {
         type = Type::T_PTR;
         intVal = 0;
         ptrVal = ptr_val;
-        arrVal = nullptr;
         isInit = false;
     }
     Var(std::vector<int> arrVal) {
@@ -126,18 +129,19 @@ public:
         addOperator(op2);
     }
     size_t size() { return ops.size(); }
-    virtual void print(unsigned indent = 0) {
-        for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); ++i) {
+    void print(unsigned indent = 0) {
+        for (std::list<Operator *>::iterator i = ops.begin(); i != ops.end(); ++i) {
             std::cout << std::string(indent, '\t');
             (*i)->print(indent);
         }
     }
-    virtual ~Block() {
+    
+    ~Block() {
         for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); ++i) {
             delete *i;
         }
     }
-    virtual void run(Block* parentBlock = nullptr) {
+    void run(Block* parentBlock = nullptr) {
         this->parentBlock = parentBlock;
         for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); ++i) {
             (*i)->run(this);
@@ -179,7 +183,7 @@ public:
             probAssign->run(parentBlock);
         }
         if (probFunCall) {
-            probFunCall->run(parentBlock);
+            probFunCall->calculate(parentBlock);
         }
     }
 };
@@ -264,21 +268,18 @@ class AssignExpression : public Expression {
 private:
     std::string ID;
     Expression* value;
+    Expression* index; // only for array, such as 'a[5+7] = 2'
 public:
     AssignExpression(const std::string& ID, Expression* value) :
-            ID(ID), value(value) {}
+            ID(ID), value(value) { index = nullptr; }
+    AssignExpression(const std::string& ID, Expression* value, Expression* index) :
+            ID(ID), value(value), index(index) {}
     virtual void print() {
         std::cout << ID << " = ";
         value->print();
     }
     virtual ~AssignExpression() { delete value; }
     void run(Block* parentBlock = nullptr) {
-        int arrIndex = -1; // only for array
-        if (ID.find("[") != -1) {
-            arrIndex = std::stoi(ID.substr(ID.find("["), ID.find("]"))); // или find("]") - 1?
-        }
-        std::string clearID = ID.erase(ID.find("["), ID.find("]")); // a[12] --> a
-
         // value may be: unaryexpr, binaryexpr, value, variable, funccal
         Value* probValue = dynamic_cast<Value*>(value);
         Variable* probVar = dynamic_cast<Variable*>(value);
@@ -286,28 +287,31 @@ public:
         UnaryExpression* probUnaryExpr = dynamic_cast<UnaryExpression*>(value);
         BinaryExpression* probBinExpr = dynamic_cast<BinaryExpression*>(value);
 
-        std::map<std::string, Var>::iterator iterVar = parentBlock->findVar(clearID);
-        if (iterVar == parentBlock->getVarsEnd())
-            throw std::logic_error("Unknown variable");
+        std::map<std::string, Var>::iterator targetVar = parentBlock->findVar(ID);
+        if (targetVar == parentBlock->getVarsEnd())
+            throw std::logic_error("Undefined variable");
+        else if (targetVar->second.getType() != Type::T_ARR && index != nullptr) {
+            throw std::logic_error("Int and ptr has no index");
+        }
 
         if (probValue) {
-            switch (iterVar->second.getType()) {
+            switch (targetVar->second.getType()) {
                 case Type::T_INT : {
-                    iterVar->second.setIntVal(probValue->getVal());
+                    targetVar->second.setIntVal(probValue->calculate());
                 }
                 case Type::T_PTR : {
                     throw std::logic_error("Assign int to ptr");
                 }
                 case Type::T_ARR : {
-                    if (arrIndex != -1)
-                        iterVar->second.setArrAtVal(probValue->getVal(), arrIndex);
+                    if (index != nullptr)
+                        targetVar->second.setArrAtVal(probValue->calculate(), index->calculate());
                     else
                         throw std::logic_error("Assign int to arr without index");
                 }
             }
         }
         if (probVar) {
-            switch (iterVar->second.getType()) {
+            switch (targetVar->second.getType()) {
                 case Type::T_INT : {
 
                 }
@@ -344,7 +348,7 @@ public:
             delete *i;
         }
     }
-    void run(Block* parentBlock = nullptr) {
+    int calculate(Block* parentBlock = nullptr) {
         // нужно ли?
     }
 };
@@ -376,7 +380,7 @@ private:
 public:
     Value(const std::string& val) : val(atoi(val.c_str())) {}
     virtual void print() { std::cout << val; }
-    int getVal() {
+    int calculate(Block* parentBlock = nullptr) {
         return val;
     }
 };
