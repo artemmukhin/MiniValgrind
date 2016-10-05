@@ -32,26 +32,34 @@ class Var {
     int* ptrVal;
     std::vector<int> arrVal;
     Type type;
+    void* thisPtr;
     bool isInit;
 public:
+    Var (Type t) {
+        type = t;
+        isInit = false;
+    }
     Var(int int_val) {
         type = Type::T_INT;
         intVal = int_val;
         ptrVal = nullptr;
-        isInit = false;
+        thisPtr = &intVal;
+        isInit = true;
     }
     Var(int* ptr_val) {
         type = Type::T_PTR;
         intVal = 0;
         ptrVal = ptr_val;
-        isInit = false;
+        thisPtr = &ptrVal;
+        isInit = true;
     }
-    Var(std::vector<int> arrVal) {
+    Var(std::vector<int> arr_val) {
         type = Type::T_ARR;
         intVal = 0;
         ptrVal = nullptr;
-        arrVal = std::vector<int>(arrVal);
-        isInit = false; // сделать isInit для каждого элемента массива?
+        arrVal = std::vector<int>(arr_val);
+        thisPtr = &arrVal;
+        isInit = true; // сделать isInit для каждого элемента массива?
         // например, с помощью vector<pair<int, bool> >, или иначе...
     }
     Type getType() {
@@ -79,7 +87,6 @@ public:
                 throw std::logic_error("Escape from the bounds of array");
         }
     }
-
     void setIntVal(int newVal) {
         if (type != Type::T_INT)
             throw std::logic_error("Invalid value's type");
@@ -101,6 +108,9 @@ public:
             else
                 throw std::logic_error("Escape from the bounds of array");
         }
+    }
+    void* getThisPtr() {
+        return thisPtr;
     }
 };
 
@@ -177,13 +187,13 @@ public:
     }
     virtual ~ExprOperator() { delete expr; }
     virtual void run(Block* parentBlock = nullptr) {
-        AssignExpression* probAssign = dynamic_cast<AssignExpression*>(expr);
+        AssignOperator* probAssign = dynamic_cast<AssignOperator*>(expr);
         FunctionCall* probFunCall = dynamic_cast<FunctionCall*>(expr);
         if (probAssign) {
             probAssign->run(parentBlock);
         }
         if (probFunCall) {
-            probFunCall->calculate(parentBlock);
+            probFunCall->run(parentBlock);
         }
     }
 };
@@ -227,58 +237,21 @@ public:
 
 };
 
-class UnaryExpression : public Expression {
-private:
-    const char* op;
-    Expression *arg;
-public:
-    UnaryExpression(const char* op, Expression* arg) :
-            op(op), arg(arg) {}
-    virtual void print() {
-        std::cout << op;
-        arg->print();
-    }
-    virtual ~UnaryExpression() { delete arg; }
-    int calculate() {
-        // на самом деле может быть &x, поэтому не int, а ???
-    }
-};
-
-class BinaryExpression : public Expression {
-private:
-    const char* op;
-    Expression *arg1, *arg2;
-public:
-    BinaryExpression(const char* op, Expression* arg1, Expression* arg2) :
-            op(op), arg1(arg1), arg2(arg2) {}
-    virtual void print() {
-        std::cout << "(";
-        arg1->print();
-        std::cout << " " << op << " ";
-        arg2->print();
-        std::cout << ")";
-    }
-    virtual ~BinaryExpression() { delete arg1; delete arg2; }
-    int calculate() {
-        // на самом деле может быть &x, поэтому не int, а ???
-    }
-};
-
-class AssignExpression : public Expression {
+class AssignOperator : public Operator {
 private:
     std::string ID;
     Expression* value;
     Expression* index; // only for array, such as 'a[5+7] = 2'
 public:
-    AssignExpression(const std::string& ID, Expression* value) :
+    AssignOperator(const std::string& ID, Expression* value) :
             ID(ID), value(value) { index = nullptr; }
-    AssignExpression(const std::string& ID, Expression* value, Expression* index) :
+    AssignOperator(const std::string& ID, Expression* value, Expression* index) :
             ID(ID), value(value), index(index) {}
     virtual void print() {
         std::cout << ID << " = ";
         value->print();
     }
-    virtual ~AssignExpression() { delete value; }
+    virtual ~AssignOperator() { delete value; }
     void run(Block* parentBlock = nullptr) {
         // value may be: unaryexpr, binaryexpr, value, variable, funccal
         Value* probValue = dynamic_cast<Value*>(value);
@@ -293,41 +266,103 @@ public:
         else if (targetVar->second.getType() != Type::T_ARR && index != nullptr) {
             throw std::logic_error("Int and ptr has no index");
         }
+        else if (targetVar->second.getType() == Type::T_ARR && index == nullptr) {
+            throw std::logic_error("Assign to array without index");
+        }
 
         if (probValue) {
             switch (targetVar->second.getType()) {
                 case Type::T_INT : {
                     targetVar->second.setIntVal(probValue->calculate());
+                    break;
                 }
                 case Type::T_PTR : {
                     throw std::logic_error("Assign int to ptr");
+                    break;
                 }
                 case Type::T_ARR : {
                     if (index != nullptr)
                         targetVar->second.setArrAtVal(probValue->calculate(), index->calculate());
                     else
                         throw std::logic_error("Assign int to arr without index");
+                    break;
                 }
             }
         }
-        if (probVar) {
+        else if (probVar) {
+            std::map<std::string, Var>::iterator sourceVar = parentBlock->findVar(probVar->getID());
             switch (targetVar->second.getType()) {
                 case Type::T_INT : {
-
+                    if (sourceVar->second.getType() != Type::T_INT)
+                        throw std::logic_error("Assign non-int to int");
+                    targetVar->second.setIntVal(sourceVar->second.getIntVal());
+                    break;
                 }
                 case Type::T_PTR : {
-
+                    if (sourceVar->second.getType() == Type::T_INT)
+                        throw std::logic_error("Assign int to ptr");
+                    else if (sourceVar->second.getType() == Type::T_PTR)
+                        targetVar->second.setPtrVal(sourceVar->second.getPtrVal());
+                    else
+                        targetVar->second.setPtrVal((int*) sourceVar->second.getThisPtr());
+                    break;
                 }
                 case Type::T_ARR : {
-
+                    if (sourceVar->second.getType() != Type::T_INT)
+                        throw std::logic_error("Assign non-int to arr[int]");
+                    targetVar->second.setArrAtVal(sourceVar->second.getIntVal(),
+                                                  index->calculate(parentBlock));
+                    break;
                 }
             }
         }
+        else if (probFunCall) {
+            // to do: malloc
+        }
+        else if (probUnaryExpr) {
+            switch (targetVar->second.getType()) {
+                case Type::T_INT : {
+                    targetVar->second.setIntVal(probUnaryExpr->calculate(parentBlock));
+                    break;
+                }
+                case Type::T_PTR : {
+                    targetVar->second.setIntVal(probUnaryExpr->calculate(parentBlock));
+                    break;
+                }
+                case Type::T_ARR : {
+                    if (index == nullptr)
+                        throw std::logic_error("Assign to arr without index");
 
+                    targetVar->second.setArrAtVal(probUnaryExpr->calculate(parentBlock),
+                                                  index->calculate());
+                    break;
+                }
+            }
+        }
+        else if (probBinExpr) {
+            switch (targetVar->second.getType()) {
+                case Type::T_INT : {
+                    targetVar->second.setIntVal(probBinExpr->calculate(parentBlock));
+                    break;
+                }
+                case Type::T_PTR : {
+                    targetVar->second.setIntVal(probBinExpr->calculate(parentBlock));
+                    break;
+                }
+                case Type::T_ARR : {
+                    if (index == nullptr)
+                        throw std::logic_error("Assign to arr without index");
+
+                    targetVar->second.setArrAtVal(probBinExpr->calculate(parentBlock),
+                                                  index->calculate());
+                    break;
+                }
+            }
+        }
     }
 };
 
-class FunctionCall : public Expression {
+class FunctionCall : public Operator {
 private:
     std::string ID;
     std::list<Expression*> args;
@@ -348,21 +383,24 @@ public:
             delete *i;
         }
     }
-    int calculate(Block* parentBlock = nullptr) {
+    void run(Block* parentBlock = nullptr) {
         // нужно ли?
+    }
+    // to do: all
+    void* returnValue() {
+        if (ID == "malloc") return nullptr;
     }
 };
 
-
-class DefExpression : public Expression {
+class DefOperator : public Operator {
 private:
     Type T;
     std::string ID;
     unsigned size;
 public:
-    DefExpression(Type T, const std::string& ID) :
+    DefOperator(Type T, const std::string& ID) :
             T(T), ID(ID) { size = 1; }
-    DefExpression(Type T, const std::string& ID, const std::string& size) :
+    DefOperator(Type T, const std::string& ID, const std::string& size) :
             T(T), ID(ID), size(atoi(size.c_str())) {} // to do: stoi
     virtual void print() {
         if (T == T_INT)
@@ -371,6 +409,43 @@ public:
             std::cout << "ptr " << ID;
         else
             std::cout << "arr " << ID << "[" << size << "]";
+    }
+};
+
+class UnaryExpression : public Expression {
+private:
+    const char* op;
+    Expression *arg;
+public:
+    UnaryExpression(const char* op, Expression* arg) :
+            op(op), arg(arg) {}
+    virtual void print() {
+        std::cout << op;
+        arg->print();
+    }
+    virtual ~UnaryExpression() { delete arg; }
+    int calculate(Block* parentBlock) {
+        // на самом деле может быть &x, поэтому не int, а ???
+    }
+};
+
+class BinaryExpression : public Expression {
+private:
+    const char* op;
+    Expression *arg1, *arg2;
+public:
+    BinaryExpression(const char* op, Expression* arg1, Expression* arg2) :
+            op(op), arg1(arg1), arg2(arg2) {}
+    virtual void print() {
+        std::cout << "(";
+        arg1->print();
+        std::cout << " " << op << " ";
+        arg2->print();
+        std::cout << ")";
+    }
+    virtual ~BinaryExpression() { delete arg1; delete arg2; }
+    int calculate(Block* parentBlock) {
+        // на самом деле может быть &x, поэтому не int, а ???
     }
 };
 
@@ -391,4 +466,5 @@ private:
 public:
     Variable(const std::string& ID, Type type) : ID(ID) {}
     virtual void print() { std::cout << ID; }
+    std::string getID() { return ID; }
 };
