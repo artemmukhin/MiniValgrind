@@ -3,7 +3,6 @@
    #define YYSTYPE std::string
    #include "lang.tab.h"
    void yyerror(char *s);
-   std::string yylval;
 %}
 
 %option yylineno

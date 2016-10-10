@@ -1,10 +1,11 @@
+{
 int n;
-arr A[12] ;
+//arr A[12];
 free(n,A,   k);
 while(n <=100) { malloc( 537 );
     if  (n == 3) {
         malloc(1,2,  786); }
    n = 5 +7;
 }
+}
 
-// https://habrahabr.ru/post/99592/
