@@ -25,6 +25,13 @@ class ArrayAtExpression;
 class Value;
 class Variable;
 
+std::string indentation(unsigned indent) {
+    std::string res = "";
+    for (unsigned i = 0; i < indent; i++)
+        res += "  ";
+    return res;
+}
+
 class Visitor {
 private:
 	EType value;
@@ -58,22 +65,37 @@ public:
 };
 
 class Var {
+	VType type;
     int intVal;
     int* ptrVal;
-    std::vector<int> arrVal;
-    VType type;
-    void* thisPtr;
+    int* arrVal;
+	size_t arrSize;
     bool isInit;
 public:
-	Var() { }
-    Var (VType t) {
-        type = t;
+	Var() {
+		intVal = 0;
+		ptrVal = nullptr;
+		arrVal = nullptr;
+		arrSize = 0;
+		isInit = false;
+	}
+    Var(VType t) {
+		type = t;
+		intVal = 0;
+		ptrVal = nullptr;
+		arrVal = nullptr;
+		arrSize = 0;
         isInit = false;
     }
 	Var(VType t, unsigned size) {
 		if (t == T_ARR && size != 0) {
-			type = t;
-			arrVal = std::vector<int>(size);
+			type = T_ARR;
+			intVal = 0;
+			ptrVal = nullptr;
+			arrVal = new int[size];
+			for (size_t i = 0; i < size; i++)
+				arrVal[i] = 0;
+			arrSize = size;
 			isInit = false;
 		}
 		else
@@ -83,29 +105,54 @@ public:
         type = T_INT;
         intVal = int_val;
         ptrVal = nullptr;
-        thisPtr = &intVal;
+		arrVal = nullptr;
         isInit = true;
     }
     Var(int* ptr_val) {
         type = T_PTR;
         intVal = 0;
         ptrVal = ptr_val;
-        thisPtr = &ptrVal;
+		arrVal = nullptr;
         isInit = true;
     }
-	/*
-    Var(std::vector<int> arr_val) {
-        type = T_ARR;
-        intVal = 0;
-        ptrVal = nullptr;
-        arrVal = std::vector<int>(arr_val);
-        thisPtr = &arrVal;
-        isInit = true; // сделать isInit для каждого элемента массива?
-        // например, с помощью vector<pair<int, bool> >, или иначе...
-    }
-	*/
 	~Var() {
 		delete ptrVal;
+		delete arrVal;
+	}
+	Var(const Var& other) {
+		//std::cout << "Ohhh, copy constructor" << std::endl;
+		type = other.type;
+		arrSize = other.arrSize;
+		ptrVal = other.ptrVal;
+		intVal = other.intVal;
+		isInit = other.isInit;
+		if (other.arrVal != nullptr) {
+			arrVal = new int[arrSize];
+			for (int i = 0; i < arrSize; i++)
+				arrVal[i] = other.arrVal[i];
+		}
+		else
+			arrVal = nullptr;
+	}
+	Var& operator=(const Var& other) {
+		//std::cout << "Ohhh, op=" << std::endl;
+		if (&other == this)
+			return *this;
+
+		type = other.type;
+		arrSize = other.arrSize;
+		ptrVal = other.ptrVal;
+		intVal = other.intVal;
+		isInit = other.isInit;
+		if (other.arrVal != nullptr) {
+			arrVal = new int[arrSize];
+			for (int i = 0; i < arrSize; i++)
+				arrVal[i] = other.arrVal[i];
+		}
+		else
+			arrVal = nullptr;
+
+		return *this;
 	}
     VType getType() {
         return type;
@@ -126,12 +173,18 @@ public:
         if (type != T_ARR)
             throw std::logic_error("Invalid value's type");
         else {
-            if (i <= arrVal.size())
+            if (i <= arrSize)
                 return arrVal[i];
             else
                 throw std::logic_error("Escape from the bounds of array");
         }
     }
+	size_t getArrSize() {
+		if (type != T_ARR)
+			throw std::logic_error("Int and ptr hasn't size");
+		else
+			return arrSize;
+	}
     void setIntVal(int newVal) {
         if (type != T_INT)
             throw std::logic_error("Invalid value's type");
@@ -148,14 +201,11 @@ public:
         if (type != T_ARR)
             throw std::logic_error("Invalid value's type");
         else {
-            if (i <= arrVal.size())
+            if (i <= arrSize)
                 arrVal[i] = newVal;
             else
                 throw std::logic_error("Escape from the bounds of array");
         }
-    }
-    void* getThisPtr() {
-        return thisPtr;
     }
 };
 
@@ -166,9 +216,7 @@ private:
 	Block* parentBlock;
 
 	void addOperator(Operator* op) {
-//		Block* newBlock = dynamic_cast<Block*>(op);
-	//	else
-			ops.push_back(op);
+		ops.push_back(op);
 	}
 
 public:
@@ -184,25 +232,31 @@ public:
 		ops = newOps;
 	}
 	size_t size() {
-		//std::cout << "OPS SIZE = " << ops.size() << std::endl;
 		return ops.size();
 	}
 	void print(unsigned indent = 0) {
-		std::cout << std::string(indent, ' ') << "{" << std::endl;
-		for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); ++i) {
+		std::cout << indentation(indent) << "{" << std::endl;
+		for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
 			(*i)->print(indent + 1);
 		}
-		std::cout << std::endl << std::string(indent, ' ') << "}" << std::endl;
+		std::cout << indentation(indent) << "}" << std::endl;
 	}
 	~Block() {
-		for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); ++i) {
+		for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
 			delete *i;
 		}
 	}
 	void run(Block* parentBlock = nullptr) {
 		this->parentBlock = parentBlock;
-		for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); ++i) {
-			(*i)->run(this);
+		for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
+			try {
+				(*i)->run(this);
+			}
+			catch (const std::exception & ex) {
+				std::cerr << "!!! Error !!!  " << ex.what() << std::endl;
+			}
+			printVarTable();
+			std::cout << std::endl;
 		}
 	}
 	std::map<std::string, Var>::iterator findVar(std::string id) {
@@ -222,11 +276,36 @@ public:
 		return vars.end();
 	}
 	void addVar(std::string id, Var newVar) {
-		if (findVar(id) == vars.end())
-			vars[id] = newVar;
+		if (findVar(id) == vars.end()) {
+            vars.insert( std::pair<std::string, Var>(id, newVar) );
+        }
 		else
 			throw std::logic_error("Variable with the same ID already exists");
 	}
+    void printVarTable() {
+		std::cout << "**** Variables ****" << std::endl;
+		for (std::map<std::string, Var>::iterator i = vars.begin(); i != vars.end(); i++) {
+			std::cout << (*i).first << " = ";
+			switch ((*i).second.getType()) {
+				case T_INT: {
+					std::cout << (*i).second.getIntVal();
+					break;
+				}
+				case T_PTR: {
+					std::cout << (*i).second.getPtrVal();
+					break;
+				}
+				case T_ARR: {
+					size_t s = (*i).second.getArrSize();
+					for (size_t j = 0; j < s - 1; j++)
+						std::cout << (*i).second.getArrAtVal(j) << ", ";
+					std::cout << (*i).second.getArrAtVal(s - 1);
+				}
+			}
+			std::cout << std::endl;
+		}
+		std::cout << "*******************" << std::endl;
+    }
 };
 
 class FunctionCall : public Expression {
@@ -238,7 +317,7 @@ public:
 		ID(ID), args(args) {}
 	virtual void print() {
 		std::cout << ID << "(";
-		for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); ++i) {
+		for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); i++) {
 			if (i != args.begin())
 				std::cout << ", ";
 			(*i)->print();
@@ -246,7 +325,7 @@ public:
 		std::cout << ")";
 	}
 	virtual ~FunctionCall() {
-		for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); ++i) {
+		for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); i++) {
 			delete *i;
 		}
 	}
@@ -358,7 +437,7 @@ public:
     ExprOperator(Expression* expr) : expr(expr) {}
     virtual void print(unsigned indent = 0) {
 		//std::cout << "print exprop\n";
-		std::cout << std::string(indent, ' ');
+		std::cout << indentation(indent);
         expr->print();
         std::cout << ";" << std::endl;
     }
@@ -379,14 +458,13 @@ public:
 	IfOperator(Expression* cond, Operator* thenBlock, Operator* elseBlock) :
 		cond(cond), thenBlock(thenBlock), elseBlock(elseBlock) {}
     virtual void print(unsigned indent = 0) {
-		std::cout << std::string(indent, ' ');
+		std::cout << indentation(indent);
         std::cout << "if ";
 		cond->print();
 		std::cout << std::endl;
         thenBlock->print(indent);
-		std::cout << std::endl;
 		if (elseBlock != nullptr) {
-			std::cout << std::endl << std::string(indent, ' ') << "else" << std::endl;
+			std::cout << indentation(indent) << "else" << std::endl;
 			elseBlock->print(indent);
 		}
 	}
@@ -403,7 +481,7 @@ public:
     WhileOperator(Expression* cond, Operator* body) :
             cond(cond), body(body) {}
     virtual void print(unsigned indent = 0) {
-        std::cout << std::string(indent, ' ') << "while ";
+        std::cout << indentation(indent) << "while ";
         cond->print();
         std::cout << std::endl;
         body->print(indent);
@@ -424,7 +502,7 @@ public:
     AssignOperator(const std::string& ID, Expression* value, Expression* index) :
             ID(ID), value(value), index(index) {}
     virtual void print(unsigned indent = 0) {
-        std::cout << std::string(indent, ' ') << ID << " = ";
+        std::cout << indentation(indent) << ID << " = ";
         value->print();
 		std::cout << ";" << std::endl;
     }
@@ -555,7 +633,7 @@ public:
             T(T), ID(ID), size(atoi(size.c_str())) {} // to do: stoi
     virtual void print(unsigned indent = 0) {
 		//std::cout << "print def\n";
-		std::cout << std::string(indent, ' ');
+		std::cout << indentation(indent);
         if (T == T_INT)
             std::cout << "int " << ID;
         else if (T == T_PTR)
@@ -565,11 +643,14 @@ public:
 		std::cout << ";" << std::endl;
 	}
 	virtual void run(Block* parentBlock) {
-		Var newVar;
-		if (T == T_ARR && size != 0)
-			newVar = Var(T_ARR, size);
-		else
-			newVar = Var(T);
-		parentBlock->addVar(ID, newVar);
+        //std::cout << "Run def operator" << std::endl;
+		if (T == T_ARR && size != 0) {
+			Var newVar(T_ARR, size);
+			parentBlock->addVar(ID, newVar);
+		}
+		else {
+			Var newVar(T);
+			parentBlock->addVar(ID, newVar);
+		}
 	}
 };

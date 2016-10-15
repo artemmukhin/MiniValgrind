@@ -1,7 +1,7 @@
 %{
    #include <string>
    #define YYSTYPE std::string
-   #include "lang.tab.h"
+   #include "parser.hpp"
    void yyerror(char *s);
 %}
 

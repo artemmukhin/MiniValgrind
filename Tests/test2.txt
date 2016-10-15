@@ -1,0 +1,8 @@
+{
+    int x;
+    int y;
+    x = 2;
+    y = 5;
+    int z;
+    z = x;
+}
