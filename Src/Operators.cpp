@@ -7,29 +7,26 @@ std::string indentation(unsigned indent) {
 	return res;
 }
 
+// To do: хранить Var* в таблице переменных
+
+
 // Block Operator
 
 void Block::addOperator(Operator* op) {
 	ops.push_back(op);
 }
-
 Block::Block() { ops = std::list<Operator*>(); }
-
 Block::Block(Operator* op) { addOperator(op); }
-
 Block::Block(Operator* op1, Operator* op2) {
 	addOperator(op1);
 	addOperator(op2);
 }
-
 Block::Block(std::list<Operator*> newOps) {
 	ops = newOps;
 }
-
 size_t Block::size() {
 	return ops.size();
 }
-
 void Block::print(unsigned indent) {
 	std::cout << indentation(indent) << "{" << std::endl;
 	for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
@@ -37,13 +34,11 @@ void Block::print(unsigned indent) {
 	}
 	std::cout << indentation(indent) << "}" << std::endl;
 }
-
 Block::~Block() {
 	for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
 		delete *i;
 	}
 }
-
 void Block::run(Block* parentBlock) {
 	this->parentBlock = parentBlock;
 	for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
@@ -57,7 +52,6 @@ void Block::run(Block* parentBlock) {
 		std::cout << std::endl;
 	}
 }
-
 std::map<std::string, Var>::iterator Block::findVar(std::string id) {
 	Block* currBlock = this;
 	// будем возвращать intVars.end() (для блока, из которого вызывается поиск),
@@ -69,13 +63,12 @@ std::map<std::string, Var>::iterator Block::findVar(std::string id) {
 		else
 			currBlock = currBlock->parentBlock;
 	}
+	//std::cout << "findVar ends" << std::endl;
 	return result;
 }
-
 std::map<std::string, Var>::iterator Block::getVarsEnd() {
 	return vars.end();
 }
-
 void Block::addVar(std::string id, Var newVar) {
 	if (findVar(id) == vars.end()) {
 		vars.insert(std::pair<std::string, Var>(id, newVar));
@@ -83,7 +76,6 @@ void Block::addVar(std::string id, Var newVar) {
 	else
 		throw std::logic_error("Variable with the same ID already exists");
 }
-
 void Block::printVarTable() {
 	std::cout << "**** Variables ****" << std::endl;
 	for (std::map<std::string, Var>::iterator i = vars.begin(); i != vars.end(); i++) {
@@ -108,8 +100,8 @@ void Block::printVarTable() {
 			}
 			}
 		}
-		catch (const std::exception & ex) {
-			std::cerr << "!!! Error !!!  " << ex.what() << std::endl;
+		catch (const NotInitVarException & ex) {
+			std::cout << "undefined";
 		}
 		std::cout << std::endl;
 	}
@@ -118,19 +110,17 @@ void Block::printVarTable() {
 
 
 
+
 // Expression Operator
 
 ExprOperator::ExprOperator(Expression* expr) : expr(expr) {}
-
 void ExprOperator::print(unsigned indent) {
 	//std::cout << "print exprop\n";
 	std::cout << indentation(indent);
 	expr->print();
 	std::cout << ";" << std::endl;
 }
-
 ExprOperator::~ExprOperator() { delete expr; }
-
 void ExprOperator::run(Block* parentBlock) {
 	Visitor v;
 	expr->accept(v);
@@ -138,11 +128,12 @@ void ExprOperator::run(Block* parentBlock) {
 }
 
 
+
+
 // If Operator
 
 IfOperator::IfOperator(Expression* cond, Operator* thenBlock, Operator* elseBlock) :
 	cond(cond), thenBlock(thenBlock), elseBlock(elseBlock) {}
-
 void IfOperator::print(unsigned indent) {
 	std::cout << indentation(indent);
 	std::cout << "if ";
@@ -154,27 +145,26 @@ void IfOperator::print(unsigned indent) {
 		elseBlock->print(indent);
 	}
 }
-
 IfOperator::~IfOperator() { delete cond; }
-
 void IfOperator::run(Block* parentBlock) {}
+
+
 
 
 // While Operator
 
 WhileOperator::WhileOperator(Expression* cond, Operator* body) :
 	cond(cond), body(body) {}
-
 void WhileOperator::print(unsigned indent) {
 	std::cout << indentation(indent) << "while ";
 	cond->print();
 	std::cout << std::endl;
 	body->print(indent);
 }
-
 WhileOperator::~WhileOperator() { delete cond; }
-
 void WhileOperator::run(Block * parentBlock) {}
+
+
 
 
 // Assign Operator
@@ -183,18 +173,14 @@ AssignOperator::AssignOperator(const std::string& ID, Expression* value) :
 	ID(ID), value(value) {
 	index = nullptr;
 }
-
 AssignOperator::AssignOperator(const std::string& ID, Expression* value, Expression* index) :
 	ID(ID), value(value), index(index) {}
-
 void AssignOperator::print(unsigned indent) {
 	std::cout << indentation(indent) << ID << " = ";
 	value->print();
 	std::cout << ";" << std::endl;
 }
-
 AssignOperator::~AssignOperator() { delete value; }
-
 void AssignOperator::run(Block* parentBlock) {
 	// value may be: unaryexpr, binaryexpr, value, variable, funccal
 	Visitor v;
@@ -214,7 +200,7 @@ void AssignOperator::run(Block* parentBlock) {
 	if (v.type() == E_VAL) {
 		switch (targetVar->second.getType()) {
 		case T_INT: {
-			targetVar->second.setIntVal(value->eval().getIntVal());
+			targetVar->second.setIntVal(value->eval(parentBlock).getIntVal());
 			break;
 		}
 		case T_PTR: {
@@ -223,7 +209,7 @@ void AssignOperator::run(Block* parentBlock) {
 		}
 		case T_ARR: {
 			if (index != nullptr)
-				targetVar->second.setArrAtVal(value->eval().getIntVal(), index->eval().getIntVal());
+				targetVar->second.setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
 			else
 				throw std::logic_error("Assign int to arr without index");
 			break;
@@ -280,7 +266,7 @@ void AssignOperator::run(Block* parentBlock) {
 				throw std::logic_error("Assign to arr without index");
 
 			targetVar->second.setArrAtVal(value->eval(parentBlock).getIntVal(),
-				index->eval().getIntVal());
+				index->eval(parentBlock).getIntVal());
 			break;
 		}
 		}
@@ -301,12 +287,14 @@ void AssignOperator::run(Block* parentBlock) {
 				throw std::logic_error("Assign to arr without index");
 
 			targetVar->second.setArrAtVal(value->eval(parentBlock).getIntVal(),
-				index->eval().getIntVal());
+				index->eval(parentBlock).getIntVal());
 			break;
 		}
 		}
 	}
 }
+
+
 
 
 // Define Operator
@@ -315,10 +303,8 @@ DefOperator::DefOperator(VType T, const std::string& ID) :
 	T(T), ID(ID) {
 	size = 0;
 }
-
 DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size) :
 	T(T), ID(ID), size(atoi(size.c_str())) {} // to do: stoi
-
 void DefOperator::print(unsigned indent) {
 	//std::cout << "print def\n";
 	std::cout << indentation(indent);
@@ -330,7 +316,6 @@ void DefOperator::print(unsigned indent) {
 		std::cout << "arr " << ID << "[" << size << "]";
 	std::cout << ";" << std::endl;
 }
-
 void DefOperator::run(Block* parentBlock) {
 	//std::cout << "Run def operator" << std::endl;
 	if (T == T_ARR && size != 0) {
@@ -346,11 +331,12 @@ void DefOperator::run(Block* parentBlock) {
 
 
 
+
+
 // EXPRESSIONS
 
 FunctionCall::FunctionCall(const std::string& ID, const std::list<Expression*>& args) :
 	ID(ID), args(args) {}
-
 void FunctionCall::print() {
 	std::cout << ID << "(";
 	for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); i++) {
@@ -360,20 +346,18 @@ void FunctionCall::print() {
 	}
 	std::cout << ")";
 }
-
 FunctionCall::~FunctionCall() {
 	for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); i++) {
 		delete *i;
 	}
 }
-
 Var FunctionCall::eval(Block* parentBlock) {}
-
 void* FunctionCall::returnValue() {
 	if (ID == "malloc") return nullptr;
 }
-
 void FunctionCall::accept(Visitor & v) { v.visit(this); }
+
+
 
 
 // Unary Expression
@@ -385,21 +369,39 @@ void UnaryExpression::print() {
 	std::cout << op;
 	arg->print();
 }
-
 UnaryExpression::~UnaryExpression() { delete arg; }
-
 Var UnaryExpression::eval(Block* parentBlock) {
-	return Var();
+	Var result;
+	Visitor v;
+	arg->accept(v);
+	switch (*op)
+	{
+	case '-': {
+		result = Var((-1) * arg->eval(parentBlock).getIntVal());
+		break;
+	}
+	case '&': {
+		// Это пока не рабтает :(
+		Variable* argVariable = dynamic_cast<Variable*>(arg);
+		result = Var(argVariable->getVar(parentBlock));
+		break;
+	}
+	case '$': {
+		result = Var(*(arg->eval(parentBlock).getPtrVal()));
+		break;
+	}
+	}
+	return result;
 }
-
 void UnaryExpression::accept(Visitor &v) { v.visit(this); }
+
+
 
 
 // Binary Expression
 
 BinaryExpression::BinaryExpression(const char* op, Expression* arg1, Expression* arg2) :
 	op(op), arg1(arg1), arg2(arg2) {}
-
 void BinaryExpression::print() {
 	std::cout << "(";
 	arg1->print();
@@ -407,20 +409,18 @@ void BinaryExpression::print() {
 	arg2->print();
 	std::cout << ")";
 }
-
 BinaryExpression::~BinaryExpression() { delete arg1; delete arg2; }
-
 Var BinaryExpression::eval(Block* parentBlock) {
 	return Var();
 }
-
 void BinaryExpression::accept(Visitor &v) { v.visit(this); }
+
+
 
 
 // Array at Expression
 
 ArrayAtExpression::ArrayAtExpression(std::string ID, Expression* index) : ID(ID), index(index) {}
-
 Var ArrayAtExpression::eval(Block* parentBlock) {
 	Var result;
 	std::map<std::string, Var>::iterator sourceArr = parentBlock->findVar(ID);
@@ -429,44 +429,44 @@ Var ArrayAtExpression::eval(Block* parentBlock) {
 	else if (sourceArr->second.getType() != T_ARR || index == nullptr) {
 		throw std::logic_error("Int and ptr has no index");
 	}
-	result = Var(sourceArr->second.getArrAtVal(index->eval().getIntVal()));
+	result = Var(sourceArr->second.getArrAtVal(index->eval(parentBlock).getIntVal()));
 	return result;
 }
-
 void ArrayAtExpression::accept(Visitor &v) { v.visit(this); }
-
 void ArrayAtExpression::print() {
-	std::cout << ID << "[" << index->eval().getIntVal() << "]";
+	std::cout << ID << "[" << index->eval(nullptr).getIntVal() << "]";
 }
+
+
 
 
 // Value Expression
 
 Value::Value(const std::string& val) : val(atoi(val.c_str())) {}
-
 void Value::print() { std::cout << val; }
-
 Var Value::eval(Block* parentBlock) {
 	return Var(val);
 }
-
 void Value::accept(Visitor &v) { v.visit(this); }
+
+
 
 
 // Variable Expression
 
 Variable::Variable(const std::string& ID) : ID(ID) {}
-
 void Variable::print() { std::cout << ID; }
-
 std::string Variable::getID() { return ID; }
-
-// лучше не использовать, т.к. возвращается новый объект Var
 Var Variable::eval(Block* parentBlock) {
-	//return parentBlock->findVar(ID)->second;
-	return Var();
+	std::map<std::string, Var>::iterator thisVar = parentBlock->findVar(ID);
+	if (thisVar == parentBlock->getVarsEnd())
+		std::cout << "No such variable";
+	return thisVar->second;
 }
-
+Var* Variable::getVar(Block* parentBlock) {
+	std::map<std::string, Var>::iterator thisVar = parentBlock->findVar(ID);
+	return &(thisVar->second);
+}
 void Variable::accept(Visitor &v) {
 	v.visit(this);
 }

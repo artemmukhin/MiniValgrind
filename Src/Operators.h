@@ -16,7 +16,7 @@ protected:
 public:
 	virtual ~Operator() {}
 	virtual void print(unsigned indent = 0) = 0;
-	virtual void run(Block* parentBlock = nullptr) = 0;
+	virtual void run(Block* parentBlock) = 0;
 };
 
 class Expression {
@@ -25,7 +25,7 @@ protected:
 public:
 	virtual ~Expression() {}
 	virtual void print() = 0;
-	virtual Var eval(Block* parentBlock = nullptr) = 0;
+	virtual Var eval(Block* parentBlock) = 0;
 	virtual void accept(Visitor &v) = 0;
 };
 
@@ -46,6 +46,7 @@ public:
 	~Block();
 	void run(Block* parentBlock = nullptr);
 	std::map<std::string, Var>::iterator findVar(std::string id);
+	Var getVar(std::string id);
 	std::map<std::string, Var>::iterator getVarsEnd();
 	void addVar(std::string id, Var newVar);
 	void printVarTable();
@@ -126,7 +127,7 @@ public:
 class UnaryExpression : public Expression {
 private:
 	const char* op;
-	Expression *arg;
+	Expression* arg;
 public:
 	UnaryExpression(const char* op, Expression* arg);
 	virtual void print();
@@ -177,5 +178,6 @@ public:
 	std::string getID();
 	// лучше не использовать, т.к. возвращается новый объект Var
 	virtual Var eval(Block* parentBlock);
+	Var* getVar(Block* parentBlock);
 	virtual void accept(Visitor &v);
 };

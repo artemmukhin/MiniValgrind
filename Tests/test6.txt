@@ -1,0 +1,8 @@
+{
+    int x;
+    ptr p;
+    ptr q;
+    x = 132;
+    p = &x;
+    q = &x;
+}

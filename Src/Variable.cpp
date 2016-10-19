@@ -1,6 +1,7 @@
 #include "Variable.h"
 
 Var::Var() {
+	type = T_INT;
 	intVal = 0;
 	ptrVal = nullptr;
 	arrVal = nullptr;
@@ -34,7 +35,7 @@ Var::Var(VType t, unsigned size) {
 		isInit = false;
 	}
 	else
-		throw std::logic_error("Can't create int/ptr variable with size");
+		throw InvalidTypeException("can't create int/ptr variable with size");
 }
 
 Var::Var(int int_val) {
@@ -46,7 +47,7 @@ Var::Var(int int_val) {
 	isArrInit = nullptr;
 }
 
-Var::Var(int* ptr_val) {
+Var::Var(Var* ptr_val) {
 	type = T_PTR;
 	intVal = 0;
 	ptrVal = ptr_val;
@@ -108,59 +109,66 @@ VType Var::getType() {
 }
 
 int Var::getIntVal() {
-	if (type != T_INT)
-		throw std::logic_error("Invalid value's type");
-	if (!isInit)
-		throw std::logic_error("Not initialized int");
-	else
+	//std::cout << "GETINTVAL type: " << type << std::endl;
+	if (type != T_INT) {
+		//std::cout << "GETINTVAL invalid type" << std::endl;
+		throw InvalidTypeException("invalid value's type");
+	}
+	if (!isInit) {
+		//std::cout << "GETINTVAL not init" << std::endl;
+		throw NotInitVarException("not initialized int");
+	}
+	else {
+		//std::cout << "GETINTVAL ok" << std::endl;
 		return intVal;
+	}
 }
-int* Var::getPtrVal() {
+Var* Var::getPtrVal() {
 	if (type != T_PTR)
-		throw std::logic_error("Invalid value's type");
+		throw InvalidTypeException("invalid value's type");
 	if (!isInit)
-		throw std::logic_error("Not initialized pointer");
+		throw NotInitVarException("not initialized pointer");
 	else
 		return ptrVal;
 }
 
 int Var::getArrAtVal(size_t i) {
 	if (type != T_ARR)
-		throw std::logic_error("Invalid value's type");
+		throw InvalidTypeException("invalid value's type");
 	else {
 		if (i <= arrSize) {
 			if (isArrInit[i] == true) {
 				return arrVal[i];
 			}
 			else {
-				throw std::logic_error("Not initialized array element");
+				throw NotInitVarException("not initialized array element");
 			}
 		}
 		else {
-			throw std::logic_error("Escape from the bounds of array");
+			throw EscapeFromBoundsException("escape from the bounds of array");
 		}
 	}
 }
 
 size_t Var::getArrSize() {
 	if (type != T_ARR)
-		throw std::logic_error("Int and ptr hasn't size");
+		throw InvalidTypeException("int and ptr hasn't size");
 	else
 		return arrSize;
 }
 
 void Var::setIntVal(int newVal) {
 	if (type != T_INT)
-		throw std::logic_error("Invalid value's type");
+		throw InvalidTypeException("invalid value's type");
 	else {
 		intVal = newVal;
 		isInit = true;
 	}
 }
 
-void Var::setPtrVal(int* newVal) {
+void Var::setPtrVal(Var* newVal) {
 	if (type != T_PTR)
-		throw std::logic_error("Invalid value's type");
+		throw InvalidTypeException("invalid value's type");
 	else {
 		ptrVal = newVal;
 		isInit = true;
@@ -169,13 +177,13 @@ void Var::setPtrVal(int* newVal) {
 
 void Var::setArrAtVal(int newVal, size_t i) {
 	if (type != T_ARR)
-		throw std::logic_error("Invalid value's type");
+		throw InvalidTypeException("invalid value's type");
 	else {
 		if (i <= arrSize) {
 			arrVal[i] = newVal;
 			isArrInit[i] = true;
 		}
 		else
-			throw std::logic_error("Escape from the bounds of array");
+			throw EscapeFromBoundsException("escape from the bounds of array");
 	}
 }

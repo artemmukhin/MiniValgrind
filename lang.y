@@ -1,8 +1,8 @@
 %{
     #include <iostream>
-    #include "../Types.h"
-    #include "../Variable.h"
-    #include "../Operators.h"
+    #include "../Src/Types.h"
+    #include "../Src/Variable.h"
+    #include "../Src/Operators.h"
     extern int yylineno;
     extern int yylex();
     
@@ -34,7 +34,7 @@
 
 %%
 
-PROGRAM: BLOCK                          { $1->run(); delete $1; }
+PROGRAM: BLOCK                          { $1->run(nullptr); delete $1; }
 ;
 
 BLOCK:  '{' OPS '}'                     { $$ = new Block($2); }

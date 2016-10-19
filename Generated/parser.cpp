@@ -65,9 +65,9 @@
 #line 1 "lang.y" /* yacc.c:339  */
 
     #include <iostream>
-    #include "../Types.h"
-    #include "../Variable.h"
-    #include "../Operators.h"
+    #include "../Src/Types.h"
+    #include "../Src/Variable.h"
+    #include "../Src/Operators.h"
     extern int yylineno;
     extern int yylex();
     
@@ -1292,7 +1292,7 @@ yyreduce:
     {
         case 2:
 #line 37 "lang.y" /* yacc.c:1646  */
-    { (yyvsp[0].oper)->run(); delete (yyvsp[0].oper); }
+    { (yyvsp[0].oper)->run(nullptr); delete (yyvsp[0].oper); }
 #line 1297 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
