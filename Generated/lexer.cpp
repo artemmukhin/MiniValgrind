@@ -1,6 +1,6 @@
-#line 2 "lexer.cpp"
+#line 2 "Generated/lexer.cpp"
 
-#line 4 "lexer.cpp"
+#line 4 "Generated/lexer.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -508,7 +508,7 @@ char *yytext;
    #include "parser.hpp"
    void yyerror(char *s);
 
-#line 512 "lexer.cpp"
+#line 512 "Generated/lexer.cpp"
 
 #define INITIAL 0
 #define STR 1
@@ -730,7 +730,7 @@ YY_DECL
 #line 13 "lang.lex"
 
 
-#line 734 "lexer.cpp"
+#line 734 "Generated/lexer.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -890,7 +890,7 @@ YY_RULE_SETUP
 #line 41 "lang.lex"
 ECHO;
 	YY_BREAK
-#line 894 "lexer.cpp"
+#line 894 "Generated/lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STR):
 	yyterminate();

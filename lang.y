@@ -1,6 +1,8 @@
 %{
     #include <iostream>
-    #include "lang.cpp"
+    #include "../Types.h"
+    #include "../Variable.h"
+    #include "../Operators.h"
     extern int yylineno;
     extern int yylex();
     

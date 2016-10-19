@@ -71,6 +71,7 @@ class Var {
     int* arrVal;
 	size_t arrSize;
     bool isInit;
+	bool* isArrInit;
 public:
 	Var() {
 		intVal = 0;
@@ -78,6 +79,7 @@ public:
 		arrVal = nullptr;
 		arrSize = 0;
 		isInit = false;
+		isArrInit = nullptr;
 	}
     Var(VType t) {
 		type = t;
@@ -86,6 +88,7 @@ public:
 		arrVal = nullptr;
 		arrSize = 0;
         isInit = false;
+		isArrInit = nullptr;
     }
 	Var(VType t, unsigned size) {
 		if (t == T_ARR && size != 0) {
@@ -93,8 +96,11 @@ public:
 			intVal = 0;
 			ptrVal = nullptr;
 			arrVal = new int[size];
-			for (size_t i = 0; i < size; i++)
+			isArrInit = new bool[size];
+			for (size_t i = 0; i < size; i++) {
 				arrVal[i] = 0;
+				isArrInit[i] = false;
+			}
 			arrSize = size;
 			isInit = false;
 		}
@@ -107,6 +113,7 @@ public:
         ptrVal = nullptr;
 		arrVal = nullptr;
         isInit = true;
+		isArrInit = nullptr;
     }
     Var(int* ptr_val) {
         type = T_PTR;
@@ -114,10 +121,12 @@ public:
         ptrVal = ptr_val;
 		arrVal = nullptr;
         isInit = true;
+		isArrInit = nullptr;
     }
 	~Var() {
 		delete ptrVal;
 		delete arrVal;
+		delete isArrInit;
 	}
 	Var(const Var& other) {
 		//std::cout << "Ohhh, copy constructor" << std::endl;
@@ -126,13 +135,16 @@ public:
 		ptrVal = other.ptrVal;
 		intVal = other.intVal;
 		isInit = other.isInit;
-		if (other.arrVal != nullptr) {
+		arrVal = nullptr;
+		isArrInit = nullptr;
+		if (other.arrVal != nullptr && other.isArrInit != nullptr) {
 			arrVal = new int[arrSize];
-			for (int i = 0; i < arrSize; i++)
+			isArrInit = new bool[arrSize];
+			for (int i = 0; i < arrSize; i++) {
 				arrVal[i] = other.arrVal[i];
+				isArrInit[i] = other.isArrInit[i];
+			}
 		}
-		else
-			arrVal = nullptr;
 	}
 	Var& operator=(const Var& other) {
 		//std::cout << "Ohhh, op=" << std::endl;
@@ -144,14 +156,16 @@ public:
 		ptrVal = other.ptrVal;
 		intVal = other.intVal;
 		isInit = other.isInit;
-		if (other.arrVal != nullptr) {
+		arrVal = nullptr;
+		isArrInit = nullptr;
+		if (other.arrVal != nullptr && other.isArrInit != nullptr) {
 			arrVal = new int[arrSize];
-			for (int i = 0; i < arrSize; i++)
+			isArrInit = new bool[arrSize];
+			for (int i = 0; i < arrSize; i++) {
 				arrVal[i] = other.arrVal[i];
+				isArrInit[i] = other.isArrInit[i];
+			}
 		}
-		else
-			arrVal = nullptr;
-
 		return *this;
 	}
     VType getType() {
@@ -160,12 +174,16 @@ public:
     int getIntVal() {
         if (type != T_INT)
             throw std::logic_error("Invalid value's type");
+		if (!isInit)
+			throw std::logic_error("Not initialized int");
         else
             return intVal;
     }
     int* getPtrVal() {
         if (type != T_PTR)
             throw std::logic_error("Invalid value's type");
+		if (!isInit)
+			throw std::logic_error("Not initialized pointer");
         else
             return ptrVal;
     }
@@ -173,11 +191,18 @@ public:
         if (type != T_ARR)
             throw std::logic_error("Invalid value's type");
         else {
-            if (i <= arrSize)
-                return arrVal[i];
-            else
-                throw std::logic_error("Escape from the bounds of array");
-        }
+			if (i <= arrSize) {
+				if (isArrInit[i] == true) {
+					return arrVal[i];
+				}
+				else {
+					throw std::logic_error("Not initialized array element");
+				}
+			}
+			else {
+				throw std::logic_error("Escape from the bounds of array");
+			}
+		}
     }
 	size_t getArrSize() {
 		if (type != T_ARR)
@@ -188,21 +213,27 @@ public:
     void setIntVal(int newVal) {
         if (type != T_INT)
             throw std::logic_error("Invalid value's type");
-        else
-            intVal = newVal;
+		else {
+			intVal = newVal;
+			isInit = true;
+		}
     }
     void setPtrVal(int* newVal) {
         if (type != T_PTR)
             throw std::logic_error("Invalid value's type");
-        else
-            ptrVal = newVal;
-    }
+		else {
+			ptrVal = newVal;
+			isInit = true;
+		}
+	}
     void setArrAtVal(int newVal, size_t i) {
         if (type != T_ARR)
             throw std::logic_error("Invalid value's type");
         else {
-            if (i <= arrSize)
-                arrVal[i] = newVal;
+			if (i <= arrSize) {
+				arrVal[i] = newVal;
+				isArrInit[i] = true;
+			}
             else
                 throw std::logic_error("Escape from the bounds of array");
         }
@@ -285,8 +316,10 @@ public:
     void printVarTable() {
 		std::cout << "**** Variables ****" << std::endl;
 		for (std::map<std::string, Var>::iterator i = vars.begin(); i != vars.end(); i++) {
+			//std::cout << "PRINT" << std::endl;
 			std::cout << (*i).first << " = ";
-			switch ((*i).second.getType()) {
+			try {
+				switch ((*i).second.getType()) {
 				case T_INT: {
 					std::cout << (*i).second.getIntVal();
 					break;
@@ -297,10 +330,15 @@ public:
 				}
 				case T_ARR: {
 					size_t s = (*i).second.getArrSize();
+					std::cout << "[";
 					for (size_t j = 0; j < s - 1; j++)
 						std::cout << (*i).second.getArrAtVal(j) << ", ";
-					std::cout << (*i).second.getArrAtVal(s - 1);
+					std::cout << (*i).second.getArrAtVal(s - 1) << "]";
 				}
+				}
+			}
+			catch (const std::exception & ex) {
+				std::cerr << "!!! Error !!!  " << ex.what() << std::endl;
 			}
 			std::cout << std::endl;
 		}
