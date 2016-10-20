@@ -9,7 +9,7 @@ enum EType;
 class Var {
 	VType type;
 	int intVal;
-	Var* ptrVal;
+	const Var* ptrVal;
 	int* arrVal;
 	size_t arrSize;
 	bool isInit;
@@ -25,10 +25,10 @@ public:
 	Var& operator=(const Var& other);
 	VType getType();
 	int getIntVal();
-	Var* getPtrVal();
+	const Var* getPtrVal();
 	int getArrAtVal(size_t i);
 	size_t getArrSize();
 	void setIntVal(int newVal);
-	void setPtrVal(Var* newVal);
+	void setPtrVal(const Var* newVal);
 	void setArrAtVal(int newVal, size_t i);
 };

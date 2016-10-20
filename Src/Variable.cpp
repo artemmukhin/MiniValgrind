@@ -57,7 +57,6 @@ Var::Var(Var* ptr_val) {
 }
 
 Var::~Var() {
-	delete ptrVal;
 	delete arrVal;
 	delete isArrInit;
 }
@@ -111,7 +110,7 @@ VType Var::getType() {
 int Var::getIntVal() {
 	//std::cout << "GETINTVAL type: " << type << std::endl;
 	if (type != T_INT) {
-		//std::cout << "GETINTVAL invalid type" << std::endl;
+		std::cout << "getIntVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
 	}
 	if (!isInit) {
@@ -123,18 +122,24 @@ int Var::getIntVal() {
 		return intVal;
 	}
 }
-Var* Var::getPtrVal() {
-	if (type != T_PTR)
+const Var* Var::getPtrVal() {
+	//std::cout << "getPtrVal: " << ptrVal << std::endl;
+	if (type != T_PTR) {
+		std::cout << "getPtrVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
+	}
 	if (!isInit)
 		throw NotInitVarException("not initialized pointer");
-	else
+	else {
 		return ptrVal;
+	}
 }
 
 int Var::getArrAtVal(size_t i) {
-	if (type != T_ARR)
+	if (type != T_ARR) {
+		std::cout << "getArrAtVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
+	}
 	else {
 		if (i <= arrSize) {
 			if (isArrInit[i] == true) {
@@ -158,26 +163,31 @@ size_t Var::getArrSize() {
 }
 
 void Var::setIntVal(int newVal) {
-	if (type != T_INT)
+	if (type != T_INT) {
+		std::cout << "setIntVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
+	}
 	else {
 		intVal = newVal;
 		isInit = true;
 	}
 }
 
-void Var::setPtrVal(Var* newVal) {
+void Var::setPtrVal(const Var* newVal) {
 	if (type != T_PTR)
 		throw InvalidTypeException("invalid value's type");
-	else {
+	else if (newVal != nullptr) {
+		//std::cout << "setPtrVal: " << newVal << std::endl;
 		ptrVal = newVal;
 		isInit = true;
 	}
 }
 
 void Var::setArrAtVal(int newVal, size_t i) {
-	if (type != T_ARR)
+	if (type != T_ARR) {
+		std::cout << "setArrAtVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
+	}
 	else {
 		if (i <= arrSize) {
 			arrVal[i] = newVal;

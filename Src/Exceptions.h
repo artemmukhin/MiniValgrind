@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdexcept>
 #include <string>
 
@@ -20,4 +22,11 @@ class EscapeFromBoundsException : public std::runtime_error
 public:
 	EscapeFromBoundsException() : std::runtime_error("Escape from the bounds of array") {}
 	EscapeFromBoundsException(std::string s) : std::runtime_error("Escape from the bounds of array: " + s) {}
+};
+
+class UndefinedVarException : public std::runtime_error
+{
+public:
+	UndefinedVarException() : std::runtime_error("Undefined variable") {}
+	UndefinedVarException(std::string s) : std::runtime_error("Undefined variable: " + s) {}
 };

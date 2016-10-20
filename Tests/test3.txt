@@ -1,13 +1,6 @@
 {
-    int x; int y; y = 84 - 2;
-    x = 17 * 2 + y * (-4);
-    
-    if (x == y) {
-        int z;
-        z = 1;
-    }
-    else {
-        int k;
-        k = 2;
-    }
+    int x;
+    int y;
+    x = -(-2);
+    y = -(-(-x));
 }

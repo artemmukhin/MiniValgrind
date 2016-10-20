@@ -1,0 +1,10 @@
+{
+    int x;
+    int y;
+    ptr p;
+    x = -12;
+    p = &x;
+    y = $p;
+    x = 5;
+    y = $p;
+}

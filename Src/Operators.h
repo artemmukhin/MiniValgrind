@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "Variable.h"
 #include "Visitor.h"
+#include "Exceptions.h"
 
 //enum VType;
 //enum EType;
@@ -32,10 +33,9 @@ public:
 class Block : public Operator {
 private:
 	std::list<Operator*> ops;
-	std::map<std::string, Var> vars;
+	std::map<std::string, Var*> vars;
 	Block* parentBlock;
 	void addOperator(Operator* op);
-
 public:
 	Block();
 	Block(Operator* op);
@@ -45,11 +45,9 @@ public:
 	void print(unsigned indent = 0);
 	~Block();
 	void run(Block* parentBlock = nullptr);
-	std::map<std::string, Var>::iterator findVar(std::string id);
-	Var getVar(std::string id);
-	std::map<std::string, Var>::iterator getVarsEnd();
-	void addVar(std::string id, Var newVar);
-	void printVarTable();
+	Var* findVar(const std::string& id);
+	void addVar(const std::string& id, Var* newVar);
+	void printVarTable() const;
 };
 
 class ExprOperator : public Operator {
@@ -178,6 +176,5 @@ public:
 	std::string getID();
 	// лучше не использовать, т.к. возвращается новый объект Var
 	virtual Var eval(Block* parentBlock);
-	Var* getVar(Block* parentBlock);
 	virtual void accept(Visitor &v);
 };

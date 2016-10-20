@@ -1,6 +1,8 @@
 {
     int x;
     int y;
-    x = 5 + 7;
-    y = x - 1;
+    x = 5;
+    y = x;
+    int z;
+    z = -x;
 }
