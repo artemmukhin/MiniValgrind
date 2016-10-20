@@ -34,7 +34,7 @@
 
 %%
 
-PROGRAM: BLOCK                          { $1->run(nullptr); delete $1; }
+PROGRAM: BLOCK                          { $1->print(); $1->run(nullptr); delete $1; }
 ;
 
 BLOCK:  '{' OPS '}'                     { $$ = new Block($2); }
@@ -61,7 +61,7 @@ OP:     OP1
 |       INT ID ';'                      { $$ = new DefOperator(T_INT, $2); }
 |       PTR ID ';'                      { $$ = new DefOperator(T_PTR, $2); }
 |       ARR ID '[' NUM ']' ';'          { $$ = new DefOperator(T_ARR, $2, $4); }
-|       ID '=' EXPR2 ';'                { $$ = new AssignOperator($1, $3); }
+|       ID '=' EXPR ';'                 { $$ = new AssignOperator($1, $3); }
 |       ID '[' EXPR2 ']' '=' EXPR2 ';'  { $$ = new AssignOperator($1, $6, $3); }
 ;
 

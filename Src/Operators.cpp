@@ -103,14 +103,26 @@ void Block::printVarTable() const {
 			case T_ARR: {
 				size_t s = (*i).second->getArrSize();
 				std::cout << "[";
-				for (size_t j = 0; j < s - 1; j++)
-					std::cout << (*i).second->getArrAtVal(j) << ", ";
-				std::cout << (*i).second->getArrAtVal(s - 1) << "]";
+				for (size_t j = 0; j < s - 1; j++) {
+					try {
+						std::cout << (*i).second->getArrAtVal(j) << ", ";
+					}
+					catch (const NotInitVarException & ex) {
+						std::cout << "None" << ", ";
+					}
+				}
+				try {
+					std::cout << (*i).second->getArrAtVal(s - 1) << "]";
+				}
+				catch (const NotInitVarException & ex) {
+					std::cout << "None" << "]";
+				}
+				break;
 			}
 			}
 		}
 		catch (const NotInitVarException & ex) {
-			std::cout << "undefined";
+			std::cout << "None";
 		}
 		catch (const std::runtime_error & ex) {
 			std::cout << "smth went wrong";
@@ -386,21 +398,34 @@ Var UnaryExpression::eval(Block* parentBlock) {
 	arg->accept(v);
 	switch (*op)
 	{
-	case '-': {
+	case '-':
+	{
 		result = Var((-1) * arg->eval(parentBlock).getIntVal());
-		break;
 	}
-	case '&': {
-		// Это пока не рабтает :(
+	break;
+	case '&':
+	{
+		// to do: add non variable* arg
 		Variable* argVariable = dynamic_cast<Variable*>(arg);
-		result = Var(parentBlock->findVar(argVariable->getID()));
-		break;
+		if (argVariable != nullptr)
+			result = Var(parentBlock->findVar(argVariable->getID()));
+		else {
+			//result = Var(arg->eval(parentBlock).getThisPtr());
+			std::cout << "It's not working :(" << std::endl;
+		}
 	}
-	case '$': {
+	break;
+	case '$':
+	{
 		Variable* argVariable = dynamic_cast<Variable*>(arg);
-		result = *(parentBlock->findVar(argVariable->getID())->getPtrVal());
-		break;
+		if (argVariable != nullptr)
+			result = *(parentBlock->findVar(argVariable->getID())->getPtrVal());
+		else {
+			//result = *(arg->eval(parentBlock).getThisPtr());
+			std::cout << "It's not working :(" << std::endl;
+		} 
 	}
+	break;
 	}
 	return result;
 }
@@ -422,7 +447,34 @@ void BinaryExpression::print() {
 }
 BinaryExpression::~BinaryExpression() { delete arg1; delete arg2; }
 Var BinaryExpression::eval(Block* parentBlock) {
-	return Var();
+	Var result;
+	Visitor v1;
+	Visitor v2;
+	arg1->accept(v1);
+	arg2->accept(v2);
+
+	if (*op == '+')
+		result = Var(arg1->eval(parentBlock).getIntVal() + arg2->eval(parentBlock).getIntVal());
+	else if (*op == '-')
+		result = Var(arg1->eval(parentBlock).getIntVal() - arg2->eval(parentBlock).getIntVal());
+	else if (*op == '*')
+		result = Var(arg1->eval(parentBlock).getIntVal() * arg2->eval(parentBlock).getIntVal());
+	else if (*op == '/')
+		result = Var(arg1->eval(parentBlock).getIntVal() / arg2->eval(parentBlock).getIntVal());
+	else if (strcmp(op, "==") == 0)
+		result = Var((arg1->eval(parentBlock).getIntVal() == arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
+	else if (strcmp(op, "<=") == 0)
+		result = Var((arg1->eval(parentBlock).getIntVal() <= arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
+	else if (strcmp(op, ">=") == 0)
+		result = Var((arg1->eval(parentBlock).getIntVal() >= arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
+	else if (strcmp(op, "!=") == 0)
+		result = Var((arg1->eval(parentBlock).getIntVal() != arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
+	else if (*op == '>')
+		result = Var((arg1->eval(parentBlock).getIntVal() > arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
+	else if (*op == '<')
+		result = Var((arg1->eval(parentBlock).getIntVal() < arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
+
+	return result;
 }
 void BinaryExpression::accept(Visitor &v) { v.visit(this); }
 

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <cstring>
 #include <vector>
 
 enum VType { T_INT, T_PTR, T_ARR };

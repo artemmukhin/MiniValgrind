@@ -19,7 +19,7 @@ public:
 	Var(VType t);
 	Var(VType t, unsigned size);
 	Var(int int_val);
-	Var(Var* ptr_val);
+	Var(const Var* ptr_val);
 	~Var();
 	Var(const Var& other);
 	Var& operator=(const Var& other);

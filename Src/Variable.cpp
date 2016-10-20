@@ -47,7 +47,7 @@ Var::Var(int int_val) {
 	isArrInit = nullptr;
 }
 
-Var::Var(Var* ptr_val) {
+Var::Var(const Var* ptr_val) {
 	type = T_PTR;
 	intVal = 0;
 	ptrVal = ptr_val;
