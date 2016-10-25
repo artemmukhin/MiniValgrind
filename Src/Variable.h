@@ -20,6 +20,7 @@ public:
 	Var(VType t, unsigned size);
 	Var(int int_val);
 	Var(const Var* ptr_val);
+	Var(const int* arr, size_t s);
 	~Var();
 	Var(const Var& other);
 	Var& operator=(const Var& other);
@@ -28,7 +29,9 @@ public:
 	const Var* getPtrVal();
 	int getArrAtVal(size_t i);
 	size_t getArrSize();
+	const int* getArr();
 	void setIntVal(int newVal);
 	void setPtrVal(const Var* newVal);
 	void setArrAtVal(int newVal, size_t i);
+	void setArrVal(const int* arr, size_t s);
 };

@@ -56,6 +56,22 @@ Var::Var(const Var* ptr_val) {
 	isArrInit = nullptr;
 }
 
+Var::Var(const int* arr, size_t s) {
+	type = T_ARR;
+	intVal = 0;
+	ptrVal = nullptr;
+	arrSize = s;
+	if (arr != nullptr) {
+		isInit = true;
+		isArrInit = new bool[s];
+		arrVal = new int[s];
+		for (int i = 0; i < s; i++) {
+			isArrInit[i] = true;
+			arrVal[i] = arr[i];
+		}
+	}
+}
+
 Var::~Var() {
 	delete arrVal;
 	delete isArrInit;
@@ -162,6 +178,8 @@ size_t Var::getArrSize() {
 		return arrSize;
 }
 
+const int* Var::getArr() { return arrVal; }
+
 void Var::setIntVal(int newVal) {
 	if (type != T_INT) {
 		std::cout << "setIntVal ex" << std::endl;
@@ -195,5 +213,23 @@ void Var::setArrAtVal(int newVal, size_t i) {
 		}
 		else
 			throw EscapeFromBoundsException("escape from the bounds of array");
+	}
+}
+
+void Var::setArrVal(const int* arr, size_t s) {
+	if (type != T_ARR) {
+		std::cout << "setArrVal ex" << std::endl;
+		throw InvalidTypeException("invalid value's type");
+	}
+	//std::cout << "setArrVal: " << (arr == nullptr) << " size=" << s << std::endl;
+	if (arr != nullptr && s != 0) {
+		arrSize = s;
+		isInit = true;
+		arrVal = new int[arrSize];
+		isArrInit = new bool[arrSize];
+		for (int i = 0; i < arrSize; i++) {
+			arrVal[i] = arr[i];
+			isArrInit[i] = false;
+		}
 	}
 }

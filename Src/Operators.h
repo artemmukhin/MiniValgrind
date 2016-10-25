@@ -118,7 +118,7 @@ public:
 	virtual void print();
 	virtual ~FunctionCall();
 	virtual Var eval(Block* parentBlock = nullptr);
-	void* returnValue();
+	//int* returnValue(Block* parentBlock);
 	virtual void accept(Visitor & v);
 };
 

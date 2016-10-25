@@ -216,9 +216,9 @@ void AssignOperator::run(Block* parentBlock) {
 	else if (targetVar->getType() != T_ARR && index != nullptr) {
 		throw InvalidTypeException("Int and ptr has no index");
 	}
-	else if (targetVar->getType() == T_ARR && index == nullptr) {
+	/*else if (targetVar->getType() == T_ARR && index == nullptr) {
 		throw InvalidTypeException("Assign to array without index");
-	}
+	}*/
 
 	// x = 5
 	if (v.type() == E_VAL) {
@@ -272,7 +272,25 @@ void AssignOperator::run(Block* parentBlock) {
 	}
 	// x = malloc(2)
 	else if (v.type() == E_FUNC) {
-		// to do: malloc
+		Var returnValue = value->eval(parentBlock);
+		switch (targetVar->getType()) {
+		case T_INT: {
+			throw InvalidTypeException("Assign ptr to int");
+			break;
+		}
+		case T_PTR: {
+			targetVar->setPtrVal(new Var(returnValue.getArr(), returnValue.getArrSize()));
+			break;
+		}
+		case T_ARR: {
+			if (index == nullptr) {
+				targetVar->setArrVal(returnValue.getArr(), returnValue.getArrSize());
+			}
+			else
+				throw InvalidTypeException("Assign arr to arr element");
+			break;
+		}
+		}
 	}
 	// x = -(y + 5)
 	else if (v.type() == E_UNARY) {
@@ -373,10 +391,17 @@ FunctionCall::~FunctionCall() {
 		delete *i;
 	}
 }
-Var FunctionCall::eval(Block* parentBlock) {}
-void* FunctionCall::returnValue() {
-	if (ID == "malloc") return nullptr;
+Var FunctionCall::eval(Block* parentBlock) {
+	size_t sizemem = (args.front())->eval(parentBlock).getIntVal();
+	return Var(new int[sizemem], sizemem);
 }
+//int* FunctionCall::returnValue(Block* parentBlock) {
+//	if (ID == "malloc" && args.size() == 1) {
+//		size_t sizemem = args[0]->eval(parentBlock).getIntVal();
+//		return new int[sizemem];
+//	}
+//	return nullptr;
+//}
 void FunctionCall::accept(Visitor & v) { v.visit(this); }
 
 
@@ -407,10 +432,13 @@ Var UnaryExpression::eval(Block* parentBlock) {
 	{
 		// to do: add non variable* arg
 		Variable* argVariable = dynamic_cast<Variable*>(arg);
+		UnaryExpression* argUnaryExpr = dynamic_cast<UnaryExpression*>(arg);
 		if (argVariable != nullptr)
 			result = Var(parentBlock->findVar(argVariable->getID()));
+		/*else if (argUnaryExpr != nullptr && *(argUnaryExpr->op) == '*') {
+			result = &(argUnaryExpr->eval(parentBlock));
+		}*/
 		else {
-			//result = Var(arg->eval(parentBlock).getThisPtr());
 			std::cout << "It's not working :(" << std::endl;
 		}
 	}
@@ -418,10 +446,13 @@ Var UnaryExpression::eval(Block* parentBlock) {
 	case '$':
 	{
 		Variable* argVariable = dynamic_cast<Variable*>(arg);
+		UnaryExpression* argUnaryExpr = dynamic_cast<UnaryExpression*>(arg);
 		if (argVariable != nullptr)
 			result = *(parentBlock->findVar(argVariable->getID())->getPtrVal());
+		else if (argUnaryExpr != nullptr && *(argUnaryExpr->op) == '&') {
+			result = *(argUnaryExpr->eval(parentBlock).getPtrVal());
+		}
 		else {
-			//result = *(arg->eval(parentBlock).getThisPtr());
 			std::cout << "It's not working :(" << std::endl;
 		} 
 	}
