@@ -47,7 +47,7 @@ Var::Var(int int_val) {
 	isArrInit = nullptr;
 }
 
-Var::Var(const Var* ptr_val) {
+Var::Var(Var* ptr_val) {
 	type = T_PTR;
 	intVal = 0;
 	ptrVal = ptr_val;
@@ -138,7 +138,7 @@ int Var::getIntVal() {
 		return intVal;
 	}
 }
-const Var* Var::getPtrVal() {
+Var* Var::getPtrVal() {
 	//std::cout << "getPtrVal: " << ptrVal << std::endl;
 	if (type != T_PTR) {
 		std::cout << "getPtrVal ex" << std::endl;
@@ -157,7 +157,7 @@ int Var::getArrAtVal(size_t i) {
 		throw InvalidTypeException("invalid value's type");
 	}
 	else {
-		if (i <= arrSize) {
+		if (i < arrSize) {
 			if (isArrInit[i] == true) {
 				return arrVal[i];
 			}
@@ -191,7 +191,7 @@ void Var::setIntVal(int newVal) {
 	}
 }
 
-void Var::setPtrVal(const Var* newVal) {
+void Var::setPtrVal(Var* newVal) {
 	if (type != T_PTR)
 		throw InvalidTypeException("invalid value's type");
 	else if (newVal != nullptr) {

@@ -88,8 +88,9 @@ private:
 	std::string ID;
 	Expression* value;
 	Expression* index; // only for array, such as 'a[5+7] = 2'
+	bool isDereferecing; // false for "x = 15", true for "*p = 15"
 public:
-	AssignOperator(const std::string& ID, Expression* value);
+	AssignOperator(const std::string& ID, Expression* value, bool isDereferencing = false);
 	AssignOperator(const std::string& ID, Expression* value, Expression* index);
 	virtual void print(unsigned indent = 0);
 	virtual ~AssignOperator();

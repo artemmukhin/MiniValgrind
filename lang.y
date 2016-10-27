@@ -62,6 +62,7 @@ OP:     OP1
 |       PTR ID ';'                      { $$ = new DefOperator(T_PTR, $2); }
 |       ARR ID '[' NUM ']' ';'          { $$ = new DefOperator(T_ARR, $2, $4); }
 |       ID '=' EXPR ';'                 { $$ = new AssignOperator($1, $3); }
+|       '*' ID '=' EXPR ';'             { $$ = new AssignOperator($2, $4, true); }
 |       ID '[' EXPR2 ']' '=' EXPR2 ';'  { $$ = new AssignOperator($1, $6, $3); }
 ;
 
@@ -91,7 +92,7 @@ VAL:    NUM                             { $$ = new Value($1); }
 |       ID                              { $$ = new Variable($1); }
 |       ID '(' ARGS ')'                 { $$ = new FunctionCall($1, $3); }
 |       '&' VAL                         { $$ = new UnaryExpression("&", $2); }
-|       '$' VAL                         { $$ = new UnaryExpression("$", $2); }
+|       '*' VAL                         { $$ = new UnaryExpression("*", $2); }
 ;
 
 ARGS:                                   { $$.clear(); }

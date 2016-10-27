@@ -1,0 +1,12 @@
+{
+    int x;
+    int y;
+    x = 10;
+    y = 20;
+    if (y > 19) {
+        int temp;
+        temp = x;
+        x = y;
+        y = temp;
+    }
+}

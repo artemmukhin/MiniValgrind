@@ -1,0 +1,36 @@
+{
+    arr A[8];
+    A[0] = 2;
+    A[1] = 5;
+    A[2] = 6;
+    A[3] = 8;
+    A[4] = 10;
+    A[5] = 12;
+    A[6] = 15;
+    A[7] = 23;
+
+    int key;
+    key = 10;
+    int res;
+    res = 0;
+    int left;
+    int right;
+    int mid;
+    left = 0;
+    right = 7;
+    while (left <= right) {
+        mid = (left + right) / 2;
+        if (A[mid] == key) {
+            res = 1;
+            left = right + 1;
+        }
+        else {
+            if (A[mid] < key) {
+                left = mid + 1;
+            }
+            if (A[mid] > key) {
+                right = mid - 1;
+            }
+        }
+    }
+}

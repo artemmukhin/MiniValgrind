@@ -76,7 +76,12 @@ void Block::addVar(const std::string& id, Var* newVar) {
 		throw UndefinedVarException("Variable with the same ID already exists");
 }
 void Block::printVarTable() const {
-	std::cout << "**** Variables ****" << std::endl;
+	if (parentBlock) {
+		std::cout << "**** Variables of nested block ****" << std::endl;
+		parentBlock->printVarTable();
+	}
+	else
+		std::cout << "**** Variables ****" << std::endl;
 	for (std::map<std::string, Var*>::const_iterator i = vars.begin(); i != vars.end(); i++) {
 		switch ((*i).second->getType()) {
 		case T_INT:
@@ -129,7 +134,11 @@ void Block::printVarTable() const {
 		}
 		std::cout << std::endl;
 	}
-	std::cout << "*******************" << std::endl;
+
+	if (parentBlock)
+		std::cout << "***********************************" << std::endl;
+	else
+		std::cout << "*******************" << std::endl;
 }
 
 
@@ -170,7 +179,16 @@ void IfOperator::print(unsigned indent) {
 	}
 }
 IfOperator::~IfOperator() { delete cond; }
-void IfOperator::run(Block* parentBlock) {}
+void IfOperator::run(Block* parentBlock) {
+	int condResult = cond->eval(parentBlock).getIntVal();
+	if (condResult == 1) {
+		thenBlock->run(parentBlock);
+	}
+	else {
+		if (elseBlock)
+			elseBlock->run(parentBlock);
+	}
+}
 
 
 
@@ -186,21 +204,29 @@ void WhileOperator::print(unsigned indent) {
 	body->print(indent);
 }
 WhileOperator::~WhileOperator() { delete cond; }
-void WhileOperator::run(Block * parentBlock) {}
+void WhileOperator::run(Block* parentBlock) {
+	int condResult = cond->eval(parentBlock).getIntVal();
+	while (condResult == 1) {
+		body->run(parentBlock);
+		condResult = cond->eval(parentBlock).getIntVal();
+	}
+}
 
 
 
 
 // Assign Operator
 
-AssignOperator::AssignOperator(const std::string& ID, Expression* value) :
-	ID(ID), value(value) {
+AssignOperator::AssignOperator(const std::string& ID, Expression* value, bool isDereferecing) :
+	ID(ID), value(value), isDereferecing(isDereferecing) {
 	index = nullptr;
 }
 AssignOperator::AssignOperator(const std::string& ID, Expression* value, Expression* index) :
-	ID(ID), value(value), index(index) {}
+	ID(ID), value(value), index(index) {
+	isDereferecing = false;
+}
 void AssignOperator::print(unsigned indent) {
-	std::cout << indentation(indent) << ID << " = ";
+	std::cout << indentation(indent) << (isDereferecing ? "*" : "") << ID << " = ";
 	value->print();
 	std::cout << ";" << std::endl;
 }
@@ -209,10 +235,17 @@ void AssignOperator::run(Block* parentBlock) {
 	// value may be: unaryexpr, binaryexpr, value, variable, funccal
 	Visitor v;
 	value->accept(v);
-
-	Var* targetVar = parentBlock->findVar(ID);
-	if (targetVar == nullptr)
+	
+	Var* targetVar;
+	if (isDereferecing) {
+		targetVar = parentBlock->findVar(ID)->getPtrVal();
+	}
+	else {
+		targetVar = parentBlock->findVar(ID);
+	}
+	if (targetVar == nullptr) {
 		throw UndefinedVarException();
+	}
 	else if (targetVar->getType() != T_ARR && index != nullptr) {
 		throw InvalidTypeException("Int and ptr has no index");
 	}
@@ -392,8 +425,12 @@ FunctionCall::~FunctionCall() {
 	}
 }
 Var FunctionCall::eval(Block* parentBlock) {
-	size_t sizemem = (args.front())->eval(parentBlock).getIntVal();
-	return Var(new int[sizemem], sizemem);
+	Var resVar;
+	if (ID == "malloc" && args.size() == 1) {
+		size_t sizemem = (args.front())->eval(parentBlock).getIntVal();
+		resVar = Var(new int[sizemem], sizemem);
+	}
+	return resVar;
 }
 //int* FunctionCall::returnValue(Block* parentBlock) {
 //	if (ID == "malloc" && args.size() == 1) {
@@ -443,7 +480,7 @@ Var UnaryExpression::eval(Block* parentBlock) {
 		}
 	}
 	break;
-	case '$':
+	case '*':
 	{
 		Variable* argVariable = dynamic_cast<Variable*>(arg);
 		UnaryExpression* argUnaryExpr = dynamic_cast<UnaryExpression*>(arg);
@@ -528,7 +565,8 @@ Var ArrayAtExpression::eval(Block* parentBlock) {
 }
 void ArrayAtExpression::accept(Visitor &v) { v.visit(this); }
 void ArrayAtExpression::print() {
-	std::cout << ID << "[" << index->eval(nullptr).getIntVal() << "]";
+	//std::cout << ID << "[" << index->eval().getIntVal() << "]";
+	std::cout << ID << "some index" << "]";
 }
 
 
