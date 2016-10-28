@@ -372,31 +372,41 @@ void AssignOperator::run(Block* parentBlock) {
 
 // Define Operator
 
-DefOperator::DefOperator(VType T, const std::string& ID) :
-	T(T), ID(ID) {
+DefOperator::DefOperator(VType T, const std::string& ID, Expression* value) :
+	type(T), ID(ID), value(value) {
 	size = 0;
 }
 DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size) :
-	T(T), ID(ID), size(atoi(size.c_str())) {} // to do: stoi
+	type(T), ID(ID), size(atoi(size.c_str())) {} // to do: stoi
 void DefOperator::print(unsigned indent) {
 	//std::cout << "print def\n";
 	std::cout << indentation(indent);
-	if (T == T_INT)
+	if (type == T_INT)
 		std::cout << "int " << ID;
-	else if (T == T_PTR)
+	else if (type == T_PTR)
 		std::cout << "ptr " << ID;
-	else
+	else if (type == T_ARR)
 		std::cout << "arr " << ID << "[" << size << "]";
+	if (value)
+		std::cout << " = " << "expr";
 	std::cout << ";" << std::endl;
 }
 void DefOperator::run(Block* parentBlock) {
 	//std::cout << "Run def operator" << std::endl;
-	if (T == T_ARR && size != 0) {
+	if (type == T_ARR && size != 0) {
 		Var* newVar = new Var(T_ARR, size);
 		parentBlock->addVar(ID, newVar);
 	}
 	else {
-		Var* newVar = new Var(T);
+		Var* newVar = new Var(type);
+		if (value) {
+			if (type == T_INT) {
+				newVar->setIntVal(value->eval(parentBlock).getIntVal());
+			}
+			else if (type == T_PTR) {
+				newVar->setPtrVal(value->eval(parentBlock).getPtrVal());
+			}
+		}
 		parentBlock->addVar(ID, newVar);
 	}
 }
@@ -463,6 +473,11 @@ Var UnaryExpression::eval(Block* parentBlock) {
 	case '-':
 	{
 		result = Var((-1) * arg->eval(parentBlock).getIntVal());
+	}
+	break;
+	case '!':
+	{
+		result = ((arg->eval(parentBlock).getIntVal()) != 0 ? 0 : 1);
 	}
 	break;
 	case '&':
@@ -541,6 +556,10 @@ Var BinaryExpression::eval(Block* parentBlock) {
 		result = Var((arg1->eval(parentBlock).getIntVal() > arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
 	else if (*op == '<')
 		result = Var((arg1->eval(parentBlock).getIntVal() < arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
+	else if (strcmp(op, "&&") == 0)
+		result = Var((arg1->eval(parentBlock).getIntVal() * arg2->eval(parentBlock).getIntVal() != 0) ? 1 : 0);
+	else if (strcmp(op, "||") == 0)
+		result = Var((arg1->eval(parentBlock).getIntVal() + arg2->eval(parentBlock).getIntVal() != 0) ? 1 : 0);
 
 	return result;
 }

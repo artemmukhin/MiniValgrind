@@ -1,10 +1,8 @@
 {
-    int x;
-    x = 27;
-    ptr p;
-    p = &x;
+    int x = 27;
+    ptr p = &x;
     arr A[3];
-    A[1] = $p;
+    A[1] = *p;
     x = -x;
-    A[2] = $p;
+    A[2] = *p;
 }

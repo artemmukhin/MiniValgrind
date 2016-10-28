@@ -1,8 +1,6 @@
 {
-    int x;
-    int y;
-    x = 123;
-    y = x - 100;
+    int x = 123;
+    int y = x - 100;
     ptr p;
     p = &x;
     *p = y * 10 - 3;

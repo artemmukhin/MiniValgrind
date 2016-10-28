@@ -23,6 +23,8 @@ arr                             return ARR;
 [<]=                            return LE;
 >=                              return GE;
 !=                              return NE;
+&&                              return AND;
+\|\|                            return OR;
 
 [0-9]+                          {
                                     yylval = yytext;

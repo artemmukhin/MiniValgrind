@@ -1,6 +1,5 @@
 {
-    int x;
-    x = 100;
+    int x = 100;
     int y;
     if (x > 80) {
         y = 13;

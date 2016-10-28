@@ -53,11 +53,13 @@ extern int yydebug;
     LE = 263,
     GE = 264,
     NE = 265,
-    NUM = 266,
-    ID = 267,
-    INT = 268,
-    PTR = 269,
-    ARR = 270
+    AND = 266,
+    OR = 267,
+    NUM = 268,
+    ID = 269,
+    INT = 270,
+    PTR = 271,
+    ARR = 272
   };
 #endif
 

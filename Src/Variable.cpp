@@ -207,7 +207,7 @@ void Var::setArrAtVal(int newVal, size_t i) {
 		throw InvalidTypeException("invalid value's type");
 	}
 	else {
-		if (i <= arrSize) {
+		if (i < arrSize) {
 			arrVal[i] = newVal;
 			isArrInit[i] = true;
 		}

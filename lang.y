@@ -22,7 +22,7 @@
 %}
 
 %token IF ELSE WHILE EXIT
-%token EQ LE GE NE
+%token EQ LE GE NE AND OR
 %token NUM ID
 %token INT PTR ARR
 
@@ -59,7 +59,9 @@ OP2:    IF '(' EXPR ')' OP1             { $$ = new IfOperator($3, $5, nullptr); 
 OP:     OP1
 |       OP2
 |       INT ID ';'                      { $$ = new DefOperator(T_INT, $2); }
+|       INT ID '=' EXPR ';'             { $$ = new DefOperator(T_INT, $2, $4); }
 |       PTR ID ';'                      { $$ = new DefOperator(T_PTR, $2); }
+|       PTR ID '=' EXPR ';'             { $$ = new DefOperator(T_PTR, $2, $4); }
 |       ARR ID '[' NUM ']' ';'          { $$ = new DefOperator(T_ARR, $2, $4); }
 |       ID '=' EXPR ';'                 { $$ = new AssignOperator($1, $3); }
 |       '*' ID '=' EXPR ';'             { $$ = new AssignOperator($2, $4, true); }
@@ -73,6 +75,8 @@ EXPR:   EXPR2
 |       EXPR NE EXPR2                  { $$ = new BinaryExpression("!=", $1, $3); }
 |       EXPR '>' EXPR2                 { $$ = new BinaryExpression(">", $1, $3);  }
 |       EXPR '<' EXPR2                 { $$ = new BinaryExpression("<", $1, $3);  }
+|       EXPR AND EXPR2                 { $$ = new BinaryExpression("&&", $1, $3);  }
+|       EXPR OR EXPR2                  { $$ = new BinaryExpression("||", $1, $3);  }
 |       ID '[' EXPR2 ']'               { $$ = new ArrayAtExpression($1, $3); }
 ;
 
@@ -87,7 +91,8 @@ TERM:   VAL
 ;
 
 VAL:    NUM                             { $$ = new Value($1); }
-|       '-' VAL                         { $$ = new UnaryExpression("-", $2); }                         
+|       '-' VAL                         { $$ = new UnaryExpression("-", $2); }
+|       '!' VAL                         { $$ = new UnaryExpression("!", $2); }
 |       '(' EXPR ')'                    { $$ = $2; }
 |       ID                              { $$ = new Variable($1); }
 |       ID '(' ARGS ')'                 { $$ = new FunctionCall($1, $3); }

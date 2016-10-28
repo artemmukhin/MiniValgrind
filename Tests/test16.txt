@@ -9,20 +9,15 @@
     A[6] = 15;
     A[7] = 23;
 
-    int key;
-    key = 10;
-    int res;
-    res = 0;
-    int left;
-    int right;
+    int key = 10;
+    int res = -1;
+    int left = 0;
+    int right = 7;
     int mid;
-    left = 0;
-    right = 7;
-    while (left <= right) {
+    while ((left <= right) && (res == -1)) {
         mid = (left + right) / 2;
         if (A[mid] == key) {
-            res = 1;
-            left = right + 1;
+            res = mid;
         }
         else {
             if (A[mid] < key) {

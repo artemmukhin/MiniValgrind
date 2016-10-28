@@ -1,9 +1,7 @@
 {
-    int x;
-    int y;
+    int x = 5;
+    int y = 10;
     int z;
-    x = 5;
-    y = 10;
     if (x * y > 100) {
         z = 42;
     }

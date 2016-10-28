@@ -99,11 +99,12 @@ public:
 
 class DefOperator : public Operator {
 private:
-	VType T;
+	VType type;
 	std::string ID;
 	unsigned size;
+	Expression* value;
 public:
-	DefOperator(VType T, const std::string& ID);
+	DefOperator(VType T, const std::string& ID, Expression* value = nullptr);
 	DefOperator(VType T, const std::string& ID, const std::string& size);
 	virtual void print(unsigned indent = 0);
 	virtual void run(Block* parentBlock);
