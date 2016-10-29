@@ -1,0 +1,12 @@
+{
+    int a = 24;
+    int b = 20;
+    int temp;
+    while (b != 0) {
+        a = a % b;
+        temp = a;
+        a = b;
+        b = temp;
+    }
+    int res = a;
+}

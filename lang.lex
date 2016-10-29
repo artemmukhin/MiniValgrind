@@ -37,7 +37,7 @@ arr                             return ARR;
                                 }
 
 [ \t\r\n]                       ; // whitespace
-[-{};()=<>+*&$/!,\[\]]          { return *yytext; }
+[-{};()=<>+*%&/!,\[\]]          { return *yytext; }
 .                               yyerror("Invalid character");
 
 %%

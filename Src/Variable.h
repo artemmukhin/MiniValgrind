@@ -34,4 +34,5 @@ public:
 	void setPtrVal(Var* newVal);
 	void setArrAtVal(int newVal, size_t i);
 	void setArrVal(const int* arr, size_t s);
+	friend std::ostream& operator<<(std::ostream & os, const Var & v);
 };

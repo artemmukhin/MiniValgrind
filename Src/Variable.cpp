@@ -233,3 +233,20 @@ void Var::setArrVal(const int* arr, size_t s) {
 		}
 	}
 }
+
+std::ostream & operator<<(std::ostream & os, const Var & v) {
+	switch (v.type)
+	{
+	case T_INT:
+		os << v.intVal;
+		break;
+	case T_PTR:
+		os << v.ptrVal;
+		break;
+	case T_ARR:
+		for (size_t i = 0; i < v.arrSize; i++)
+			os << v.arrVal[i] << " ";
+		break;
+	}
+	return os;
+}

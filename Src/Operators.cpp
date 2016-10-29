@@ -7,8 +7,6 @@ std::string indentation(unsigned indent) {
 	return res;
 }
 
-// To do: хранить Var* в таблице переменных
-
 
 // Block Operator
 
@@ -48,8 +46,8 @@ void Block::run(Block* parentBlock) {
 		catch (const std::exception & ex) {
 			std::cerr << "!!! Error !!!  " << ex.what() << std::endl;
 		}
-		printVarTable();
-		std::cout << std::endl;
+		//printVarTable();
+		//std::cout << std::endl;
 	}
 }
 Var* Block::findVar(const std::string& id) {
@@ -140,7 +138,9 @@ void Block::printVarTable() const {
 	else
 		std::cout << "*******************" << std::endl;
 }
-
+void Block::clearVarTable() {
+	vars.clear();
+}
 
 
 
@@ -157,6 +157,7 @@ ExprOperator::~ExprOperator() { delete expr; }
 void ExprOperator::run(Block* parentBlock) {
 	Visitor v;
 	expr->accept(v);
+	expr->eval(parentBlock);
 	// do nothing...
 }
 
@@ -165,7 +166,7 @@ void ExprOperator::run(Block* parentBlock) {
 
 // If Operator
 
-IfOperator::IfOperator(Expression* cond, Operator* thenBlock, Operator* elseBlock) :
+IfOperator::IfOperator(Expression* cond, Block* thenBlock, Block* elseBlock) :
 	cond(cond), thenBlock(thenBlock), elseBlock(elseBlock) {}
 void IfOperator::print(unsigned indent) {
 	std::cout << indentation(indent);
@@ -183,10 +184,13 @@ void IfOperator::run(Block* parentBlock) {
 	int condResult = cond->eval(parentBlock).getIntVal();
 	if (condResult == 1) {
 		thenBlock->run(parentBlock);
+		thenBlock->clearVarTable();
 	}
 	else {
-		if (elseBlock)
+		if (elseBlock) {
 			elseBlock->run(parentBlock);
+			elseBlock->clearVarTable();
+		}
 	}
 }
 
@@ -195,7 +199,7 @@ void IfOperator::run(Block* parentBlock) {
 
 // While Operator
 
-WhileOperator::WhileOperator(Expression* cond, Operator* body) :
+WhileOperator::WhileOperator(Expression* cond, Block* body) :
 	cond(cond), body(body) {}
 void WhileOperator::print(unsigned indent) {
 	std::cout << indentation(indent) << "while ";
@@ -208,6 +212,7 @@ void WhileOperator::run(Block* parentBlock) {
 	int condResult = cond->eval(parentBlock).getIntVal();
 	while (condResult == 1) {
 		body->run(parentBlock);
+		body->clearVarTable();
 		condResult = cond->eval(parentBlock).getIntVal();
 	}
 }
@@ -252,6 +257,7 @@ void AssignOperator::run(Block* parentBlock) {
 	/*else if (targetVar->getType() == T_ARR && index == nullptr) {
 		throw InvalidTypeException("Assign to array without index");
 	}*/
+
 
 	// x = 5
 	if (v.type() == E_VAL) {
@@ -303,6 +309,7 @@ void AssignOperator::run(Block* parentBlock) {
 		}
 		}
 	}
+
 	// x = malloc(2)
 	else if (v.type() == E_FUNC) {
 		Var returnValue = value->eval(parentBlock);
@@ -338,7 +345,7 @@ void AssignOperator::run(Block* parentBlock) {
 		}
 		case T_ARR: {
 			if (index == nullptr)
-				throw std::logic_error("Assign to arr without index");
+				throw InvalidTypeException("Assign to arr without index");
 			targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
 			break;
 		}
@@ -357,10 +364,26 @@ void AssignOperator::run(Block* parentBlock) {
 		}
 		case T_ARR: {
 			if (index == nullptr)
-				throw std::logic_error("Assign to arr without index");
-
-			targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
-				index->eval(parentBlock).getIntVal());
+				throw InvalidTypeException("Assign to arr without index");
+			targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
+			break;
+		}
+		}
+	}
+	else if (v.type() == E_ARRAT) {
+		switch (targetVar->getType()) {
+		case T_INT: {
+			targetVar->setIntVal(value->eval(parentBlock).getIntVal());
+			break;
+		}
+		case T_PTR: {
+			throw InvalidTypeException("Assign arr[i] to ptr");
+			break;
+		}
+		case T_ARR: {
+			if (index == nullptr)
+				throw InvalidTypeException("Assign to arr without index");
+			targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
 			break;
 		}
 		}
@@ -376,8 +399,8 @@ DefOperator::DefOperator(VType T, const std::string& ID, Expression* value) :
 	type(T), ID(ID), value(value) {
 	size = 0;
 }
-DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size) :
-	type(T), ID(ID), size(atoi(size.c_str())) {} // to do: stoi
+DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size, Expression* value) :
+	type(T), ID(ID), size(atoi(size.c_str())), value(value) {} // to do: stoi
 void DefOperator::print(unsigned indent) {
 	//std::cout << "print def\n";
 	std::cout << indentation(indent);
@@ -387,7 +410,7 @@ void DefOperator::print(unsigned indent) {
 		std::cout << "ptr " << ID;
 	else if (type == T_ARR)
 		std::cout << "arr " << ID << "[" << size << "]";
-	if (value)
+	if (value != nullptr)
 		std::cout << " = " << "expr";
 	std::cout << ";" << std::endl;
 }
@@ -439,6 +462,10 @@ Var FunctionCall::eval(Block* parentBlock) {
 	if (ID == "malloc" && args.size() == 1) {
 		size_t sizemem = (args.front())->eval(parentBlock).getIntVal();
 		resVar = Var(new int[sizemem], sizemem);
+	}
+	else if (ID == "print" && args.size() == 1) {
+		std::cout << "PRINT: ";
+		std::cout << args.front()->eval(parentBlock) << std::endl;
 	}
 	return resVar;
 }
@@ -544,6 +571,8 @@ Var BinaryExpression::eval(Block* parentBlock) {
 		result = Var(arg1->eval(parentBlock).getIntVal() * arg2->eval(parentBlock).getIntVal());
 	else if (*op == '/')
 		result = Var(arg1->eval(parentBlock).getIntVal() / arg2->eval(parentBlock).getIntVal());
+	else if (*op == '%')
+		result = Var(arg1->eval(parentBlock).getIntVal() % arg2->eval(parentBlock).getIntVal());
 	else if (strcmp(op, "==") == 0)
 		result = Var((arg1->eval(parentBlock).getIntVal() == arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
 	else if (strcmp(op, "<=") == 0)
@@ -585,7 +614,7 @@ Var ArrayAtExpression::eval(Block* parentBlock) {
 void ArrayAtExpression::accept(Visitor &v) { v.visit(this); }
 void ArrayAtExpression::print() {
 	//std::cout << ID << "[" << index->eval().getIntVal() << "]";
-	std::cout << ID << "some index" << "]";
+	std::cout << ID << "[" << "index" << "]";
 }
 
 

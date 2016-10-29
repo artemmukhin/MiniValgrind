@@ -48,6 +48,7 @@ public:
 	Var* findVar(const std::string& id);
 	void addVar(const std::string& id, Var* newVar);
 	void printVarTable() const;
+	void clearVarTable();
 };
 
 class ExprOperator : public Operator {
@@ -63,10 +64,10 @@ public:
 class IfOperator : public Operator {
 private:
 	Expression* cond;
-	Operator* thenBlock;
-	Operator* elseBlock;
+	Block* thenBlock;
+	Block* elseBlock;
 public:
-	IfOperator(Expression* cond, Operator* thenBlock, Operator* elseBlock);
+	IfOperator(Expression* cond, Block* thenBlock, Block* elseBlock);
 	virtual void print(unsigned indent = 0);
 	virtual ~IfOperator();
 	virtual void run(Block* parentBlock = nullptr);
@@ -75,9 +76,9 @@ public:
 class WhileOperator : public Operator {
 private:
 	Expression* cond;
-	Operator* body;
+	Block* body;
 public:
-	WhileOperator(Expression* cond, Operator* body);
+	WhileOperator(Expression* cond, Block* body);
 	virtual void print(unsigned indent = 0);
 	virtual ~WhileOperator();
 	virtual void run(Block * parentBlock = nullptr);
@@ -104,8 +105,8 @@ private:
 	unsigned size;
 	Expression* value;
 public:
-	DefOperator(VType T, const std::string& ID, Expression* value = nullptr);
-	DefOperator(VType T, const std::string& ID, const std::string& size);
+	DefOperator(VType T, const std::string& ID, Expression* value);
+	DefOperator(VType T, const std::string& ID, const std::string& size, Expression* value);
 	virtual void print(unsigned indent = 0);
 	virtual void run(Block* parentBlock);
 };
