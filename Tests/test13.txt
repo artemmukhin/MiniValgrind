@@ -1,9 +1,24 @@
 {
-    int x = 10;
-    int y = 20;
-    if (y > 19) {
-        int temp = x;
-        x = y;
-        y = temp;
+    arr A[5];
+    int i = 0;
+    while (i < 5) {
+        A[i] = 2 * i;
+        i = i + 1;
     }
+
+    ptr p;
+    p = malloc(5);
+    i = 0;
+    while (i < 5) {
+        p[i] = 3 * i;
+        i = i + 1;
+    }
+
+    arr B[5];
+    i = 0;
+    while (i < 5) {
+        B[i] = A[i] + p[i];
+        i = i + 1;
+    }
+    print(B); // "[0, 5, 10, 15, 20]"
 }
