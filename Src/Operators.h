@@ -170,14 +170,13 @@ public:
 	void accept(Visitor &v);
 };
 
-class Variable : public Expression {
+class VarExpression : public Expression {
 private:
 	std::string ID;
 public:
-	Variable(const std::string& ID);
+	VarExpression(const std::string& ID);
 	virtual void print();
 	std::string getID();
-	// лучше не использовать, т.к. возвращается новый объект Var
 	virtual Var eval(Block* parentBlock);
 	virtual void accept(Visitor &v);
 };

@@ -1,10 +1,13 @@
 {
-    int x;
-    int y;
-    y = 13 - 10;
-    x = y * 2;
-    arr A[3];
-    A[0] = 11;
-    A = malloc(x);
-    A[4] = 132;
+    int a = 24;
+    int b = 20;
+    int temp;
+    while (b != 0) {
+        a = a % b;
+        temp = a;
+        a = b;
+        b = temp;
+    }
+    int res = a;
+    print(res); // "4"
 }

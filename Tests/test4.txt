@@ -1,8 +1,10 @@
 {
-    int x;
-    int y;
-    int z;
-    x = 5 + 7;
-    y = 2 * (3 - 1);
-    z = 10 * x - y;
+    int x = 27;
+    ptr p = &x;
+    arr A[3];
+    A[1] = *p;
+    x = -x;
+    A[2] = *p;
+    print(A[1]); // "27"
+    print(A[2]); // "-27"
 }

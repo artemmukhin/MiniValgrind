@@ -1,6 +1,11 @@
 {
-    int x;
+    int x = -12;
     int y;
-    x = -(-2);
-    y = -(-(-x));
+    ptr p;
+    p = &x;
+    y = *p;
+    print(y); // "-12"
+    x = 5;
+    y = *p;
+    print(y); // "5"
 }

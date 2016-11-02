@@ -1,8 +1,10 @@
 {
-    int x = 27;
-    ptr p = &x;
-    arr A[3];
-    A[1] = *p;
-    x = -x;
-    A[2] = *p;
+    int x = 0;
+    int y = 1;
+    while (x < 4) {
+        y = y * 2;
+        x = x + 1;
+    }
+    print(y); // "16"
 }
+

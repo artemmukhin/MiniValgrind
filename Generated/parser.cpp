@@ -1310,7 +1310,7 @@ yyreduce:
     {
         case 2:
 #line 39 "lang.y" /* yacc.c:1646  */
-    { (yyvsp[0].block)->print(); (yyvsp[0].block)->run(nullptr); delete (yyvsp[0].block); }
+    { (yyvsp[0].block)->run(nullptr); delete (yyvsp[0].block); }
 #line 1315 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
@@ -1508,7 +1508,7 @@ yyreduce:
 
   case 38:
 #line 88 "lang.y" /* yacc.c:1646  */
-    { (yyval.expr) = new Variable((yyvsp[0].str)); }
+    { (yyval.expr) = new VarExpression((yyvsp[0].str)); }
 #line 1513 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 

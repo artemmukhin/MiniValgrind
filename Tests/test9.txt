@@ -1,9 +1,27 @@
 {
-    int x;
-    x = 5;
-    ptr p;
-    p = &x;
-    int y;
-    y = 10 + 2 * (*p);
-}
+    arr A[8];
+    A[0] = 2; A[1] = 5; A[2] = 6;
+    A[3] = 8; A[4] = 10; A[5] = 12;
+    A[6] = 15; A[7] = 23;
 
+    int key = 10;
+    int res = -1;
+    int left = 0;
+    int right = 7;
+    int mid;
+    while ((left <= right) && (res == -1)) {
+        mid = (left + right) / 2;
+        if (A[mid] == key) {
+            res = mid;
+        }
+        else {
+            if (A[mid] < key) {
+                left = mid + 1;
+            }
+            if (A[mid] > key) {
+                right = mid - 1;
+            }
+        }
+    }
+    print(res); // "4"
+}

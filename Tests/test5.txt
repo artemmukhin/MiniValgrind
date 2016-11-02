@@ -1,6 +1,10 @@
 {
-    int x;
-    int y;
-    x = 20;
-    y = -x;
+    int x = 123;
+    int y = x - 100;
+    ptr p;
+    p = &x;
+    *p = y * 10 - 3;
+    x = x + 10000;
+    y = *p;
+    print(y); // "10227"
 }

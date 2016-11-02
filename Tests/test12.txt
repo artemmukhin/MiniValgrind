@@ -1,11 +1,10 @@
 {
-    int x = 100;
-    int y;
-    if (x > 80) {
-        y = 13;
-    }
-    else {
-        y = 243;
-    }
+    ptr p;
+    p = malloc(3);
+    p[0] = 10;
+    p[1] = 20;
+    p[2] = 30;
+    int x = p[0];
+    int y = p[1] + p[2];
+    print(y); // "50"
 }
-

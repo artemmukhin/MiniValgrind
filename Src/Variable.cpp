@@ -100,9 +100,14 @@ Var& Var::operator=(const Var& other) {
 	//std::cout << "Ohhh, op=" << std::endl;
 	if (&other == this)
 		return *this;
+    //if (type != other.type) {
+    //    if (!(type == T_PTR && other.type == T_ARR))
+    //        throw InvalidTypeException("Assign between incompatible types");
+    //}
+    //else
+	    type = other.type;
 
-	type = other.type;
-	arrSize = other.arrSize;
+    arrSize = other.arrSize;
 	ptrVal = other.ptrVal;
 	intVal = other.intVal;
 	isInit = other.isInit;
@@ -138,6 +143,7 @@ int Var::getIntVal() {
 		return intVal;
 	}
 }
+
 Var* Var::getPtrVal() {
 	//std::cout << "getPtrVal: " << ptrVal << std::endl;
 	if (type != T_PTR) {
@@ -152,13 +158,13 @@ Var* Var::getPtrVal() {
 }
 
 int Var::getArrAtVal(size_t i) {
-	if (type != T_ARR) {
+	if (type == T_INT) {
 		std::cout << "getArrAtVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
 	}
-	else {
+	else if (arrVal != nullptr) {
 		if (i < arrSize) {
-			if (isArrInit[i] == true) {
+			if (isArrInit[i]) {
 				return arrVal[i];
 			}
 			else {
@@ -169,6 +175,9 @@ int Var::getArrAtVal(size_t i) {
 			throw EscapeFromBoundsException("escape from the bounds of array");
 		}
 	}
+	else {
+        throw InvalidTypeException("ptr[i]");
+    }
 }
 
 size_t Var::getArrSize() {
@@ -202,22 +211,24 @@ void Var::setPtrVal(Var* newVal) {
 }
 
 void Var::setArrAtVal(int newVal, size_t i) {
-	if (type != T_ARR) {
+	if (type == T_INT) {
 		std::cout << "setArrAtVal ex" << std::endl;
-		throw InvalidTypeException("invalid value's type");
+		throw InvalidTypeException("assign to int[i]");
 	}
-	else {
-		if (i < arrSize) {
-			arrVal[i] = newVal;
-			isArrInit[i] = true;
-		}
-		else
-			throw EscapeFromBoundsException("escape from the bounds of array");
-	}
+    else if (arrVal != nullptr) {
+        if (i < arrSize) {
+            arrVal[i] = newVal;
+            isArrInit[i] = true;
+        }
+        else
+            throw EscapeFromBoundsException("escape from the bounds of array");
+    }
+    else
+        throw InvalidTypeException("assign to ptr[i]");
 }
 
 void Var::setArrVal(const int* arr, size_t s) {
-	if (type != T_ARR) {
+	if (type == T_INT) {
 		std::cout << "setArrVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
 	}
@@ -237,15 +248,18 @@ void Var::setArrVal(const int* arr, size_t s) {
 std::ostream & operator<<(std::ostream & os, const Var & v) {
 	switch (v.type)
 	{
-	case T_INT:
-		os << v.intVal;
-		break;
-	case T_PTR:
-		os << v.ptrVal;
-		break;
-	case T_ARR:
-		for (size_t i = 0; i < v.arrSize; i++)
-			os << v.arrVal[i] << " ";
+        case T_INT:
+            os << v.intVal;
+            break;
+        case T_PTR:
+            os << v.ptrVal;
+            break;
+        case T_ARR: {
+            os << "[";
+            for (size_t i = 0; i < v.arrSize - 1; i++)
+                os << v.arrVal[i] << ", ";
+            os << v.arrVal[v.arrSize - 1] << "]";
+        }
 		break;
 	}
 	return os;

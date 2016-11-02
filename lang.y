@@ -36,7 +36,7 @@
 
 %%
 
-PROGRAM: BLOCK                          { $1->print(); $1->run(nullptr); delete $1; }
+PROGRAM: BLOCK                          { $1->run(nullptr); delete $1; }
 ;
 
 BLOCK:  '{' OPS '}'                     { $$ = new Block($2); }
@@ -85,7 +85,7 @@ VAL:    NUM                             { $$ = new Value($1); }
 |       '-' VAL                         { $$ = new UnaryExpression("-", $2); }
 |       '!' VAL                         { $$ = new UnaryExpression("!", $2); }
 |       '(' EXPR ')'                    { $$ = $2; }
-|       ID                              { $$ = new Variable($1); }
+|       ID                              { $$ = new VarExpression($1); }
 |       ID '(' ARGS ')'                 { $$ = new FunctionCall($1, $3); }
 |       '&' VAL                         { $$ = new UnaryExpression("&", $2); }
 |       '*' VAL                         { $$ = new UnaryExpression("*", $2); }
