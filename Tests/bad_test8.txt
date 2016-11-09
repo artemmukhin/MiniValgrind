@@ -1,0 +1,10 @@
+{
+    arr A[3];
+    A[0] = 10;
+    A[2] = 20;
+    ptr p;
+    p = A;
+    int x = p[2];
+    print(x);
+    int y = p[1];
+}

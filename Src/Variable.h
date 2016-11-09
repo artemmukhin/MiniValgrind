@@ -29,10 +29,11 @@ public:
 	Var* getPtrVal();
 	int getArrAtVal(size_t i);
 	size_t getArrSize();
-	const int* getArr();
+	int* getArr();
+	bool* getArrInit();
 	void setIntVal(int newVal);
 	void setPtrVal(Var* newVal);
 	void setArrAtVal(int newVal, size_t i);
-	void setArrVal(const int* arr, size_t s);
+	void setArrVal(const int* arr, size_t s, bool* sourceArrInit = nullptr);
 	friend std::ostream& operator<<(std::ostream & os, const Var & v);
 };

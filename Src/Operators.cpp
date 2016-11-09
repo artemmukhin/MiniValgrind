@@ -1,4 +1,7 @@
 #include "Operators.h"
+#define PRINT_VAR_TABLE false
+
+// TO DO: DefOperator with assignment, e.g. 'arr A; ptr p = A;'
 
 std::string indentation(unsigned indent) {
 	std::string res = "";
@@ -6,8 +9,6 @@ std::string indentation(unsigned indent) {
 		res += "  ";
 	return res;
 }
-
-const bool PRINT_VAR_TABLE = false;
 
 // Block Operator
 void Block::addOperator(Operator* op) {
@@ -44,7 +45,7 @@ void Block::run(Block* parentBlock) {
 			(*i)->run(this);
 		}
 		catch (const std::exception & ex) {
-			std::cerr << "!!! Error !!!  " << ex.what() << std::endl;
+			std::cerr << "!!! ERROR !!!  " << ex.what() << std::endl;
             std::string skipLine;
             std::getline(std::cin, skipLine);
         }
@@ -94,47 +95,7 @@ void Block::printVarTable() const {
 			std::cout << "arr ";
 			break;
 		}
-		std::cout << (*i).first << " = " << *((*i).second);
-        /*
-		try {
-			switch ((*i).second->getType()) {
-			case T_INT: {
-				std::cout << (*i).second->getIntVal();
-				break;
-			}
-			case T_PTR: {
-				std::cout << (*i).second->getPtrVal();
-				break;
-			}
-			case T_ARR: {
-				size_t s = (*i).second->getArrSize();
-				std::cout << "[";
-				for (size_t j = 0; j < s - 1; j++) {
-					try {
-						std::cout << (*i).second->getArrAtVal(j) << ", ";
-					}
-					catch (const NotInitVarException & ex) {
-						std::cout << "None" << ", ";
-					}
-				}
-				try {
-					std::cout << (*i).second->getArrAtVal(s - 1) << "]";
-				}
-				catch (const NotInitVarException & ex) {
-					std::cout << "None" << "]";
-				}
-				break;
-			}
-			}
-		}
-		catch (const NotInitVarException & ex) {
-			std::cout << "None";
-		}
-		catch (const std::runtime_error & ex) {
-			std::cout << "smth went wrong";
-		}
-        */
-		std::cout << std::endl;
+		std::cout << (*i).first << " = " << *((*i).second) << std::endl;
 	}
 
 	if (parentBlock)
@@ -143,7 +104,10 @@ void Block::printVarTable() const {
 		std::cout << "*******************" << std::endl;
 }
 void Block::clearVarTable() {
-	vars.clear();
+    for (auto iter : vars) {
+        delete iter.second;
+    }
+    vars.clear();
 }
 
 
@@ -290,10 +254,12 @@ void AssignOperator::run(Block* parentBlock) {
                                                index->eval(parentBlock).getIntVal());
                     else
                         throw InvalidTypeException("Assign int to ptr");
-                } else if (sourceVar->getType() == T_PTR)
+                }
+                else if (sourceVar->getType() == T_PTR)
                     targetVar->setPtrVal(sourceVar->getPtrVal());
                 else if (sourceVar->getType() == T_ARR)
-                    throw InvalidTypeException("Assign arr to ptr");
+                    targetVar->setArrVal(sourceVar->getArr(), sourceVar->getArrSize(), sourceVar->getArrInit());
+                    //throw InvalidTypeException("Assign arr to ptr");
             } break;
             case T_ARR: {
                 if (sourceVar->getType() != T_INT)
@@ -419,6 +385,10 @@ void DefOperator::run(Block* parentBlock) {
 			}
 		}
 		parentBlock->addVar(ID, newVar);
+//        if (value != nullptr) {
+//            AssignOperator assignOp(ID, value);
+//            assignOp.run(parentBlock);
+//        }
 	}
 }
 
@@ -443,7 +413,7 @@ FunctionCall::~FunctionCall() {
 Var FunctionCall::eval(Block* parentBlock) {
 	Var resVar;
 	if (ID == "malloc" && args.size() == 1) {
-		size_t sizemem = (args.front())->eval(parentBlock).getIntVal();
+		size_t sizemem = (size_t) (args.front())->eval(parentBlock).getIntVal();
 		resVar = Var(new int[sizemem], sizemem);
 	}
 	else if (ID == "print" && args.size() == 1) {

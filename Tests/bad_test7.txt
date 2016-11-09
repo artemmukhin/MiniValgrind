@@ -1,0 +1,12 @@
+{
+    ptr p;
+    int i = 0;
+    int foo = 10;
+    while (i < 3) {
+        int bar = foo + i;
+        i = i + 1;
+        p = &bar;
+    }
+    int x = *p;
+    print(x);
+}

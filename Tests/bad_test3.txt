@@ -1,8 +1,6 @@
 {
     arr A[5];
-    int x;
     A[1] = 2;
-    int y;
-    x = A[1];
-    y = A[2];
+    int x = A[1];
+    int y = A[2];
 }

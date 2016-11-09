@@ -1,11 +1,9 @@
 {
-    int x = 5;
-    int y = 10;
-    int z;
-    if (x * y > 100) {
-        z = 42;
-    }
-    else {
-        z = -42;
-    }
+    arr A[2];
+    A[0] = 10;
+    A[1] = 20;
+    ptr p;
+    p = A;
+    int x = p[1];
+    print(x);
 }

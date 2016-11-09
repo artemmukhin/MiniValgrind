@@ -1,9 +1,9 @@
 import subprocess as sproc
-NumberOfTests = 13
+NumberOfTests = 14
 Answers = {1: "PRINT: -2\n", 2: "PRINT: 116\n", 3: "PRINT: -12\nPRINT: 5\n", 4: "PRINT: 27\nPRINT: -27\n",
            5: "PRINT: 10227\n", 6: "PRINT: 13\n", 7: "PRINT: -42\n", 8: "PRINT: 16\n", 9: "PRINT: 4\n",
            10: "PRINT: 4\n", 11: "PRINT: [1, 3, 5, 6, 7, 10, 15, 22]\n", 12: "PRINT: 50\n",
-           13: "PRINT: [0, 5, 10, 15, 20]\n"}
+           13: "PRINT: [0, 5, 10, 15, 20]\n", 14: "PRINT: 20\n"}
 miniValg = '/home/ortem/MiniValgrind/MiniValgrind.exe'
 
 for i in range(1, NumberOfTests + 1):

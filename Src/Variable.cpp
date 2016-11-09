@@ -73,8 +73,14 @@ Var::Var(const int* arr, size_t s) {
 }
 
 Var::~Var() {
-	delete arrVal;
+    // std::cout << "Call ~Var() " << this << std::endl;
+    delete arrVal;
 	delete isArrInit;
+    intVal = 0;
+    ptrVal = nullptr;
+    arrVal = nullptr;
+    arrSize = 0;
+    isInit = false;
 }
 
 Var::Var(const Var& other) {
@@ -176,18 +182,30 @@ int Var::getArrAtVal(size_t i) {
 		}
 	}
 	else {
-        throw InvalidTypeException("ptr[i]");
+        throw InvalidTypeException("ptr[i] (nullptr)");
     }
 }
 
 size_t Var::getArrSize() {
-	if (type != T_ARR)
-		throw InvalidTypeException("int and ptr hasn't size");
+	if (type == T_INT)
+		throw InvalidTypeException("int has no size");
 	else
 		return arrSize;
 }
 
-const int* Var::getArr() { return arrVal; }
+int* Var::getArr() {
+    if (type == T_INT)
+        throw InvalidTypeException("int has no array");
+    else
+        return arrVal;
+}
+
+bool* Var::getArrInit() {
+    if (type == T_INT)
+        throw InvalidTypeException("int has no array");
+    else
+        return isArrInit;
+}
 
 void Var::setIntVal(int newVal) {
 	if (type != T_INT) {
@@ -227,7 +245,7 @@ void Var::setArrAtVal(int newVal, size_t i) {
         throw InvalidTypeException("assign to ptr[i]");
 }
 
-void Var::setArrVal(const int* arr, size_t s) {
+void Var::setArrVal(const int* arr, size_t s, bool* sourceArrInit) {
 	if (type == T_INT) {
 		std::cout << "setArrVal ex" << std::endl;
 		throw InvalidTypeException("invalid value's type");
@@ -239,8 +257,11 @@ void Var::setArrVal(const int* arr, size_t s) {
 		arrVal = new int[arrSize];
 		isArrInit = new bool[arrSize];
 		for (int i = 0; i < arrSize; i++) {
-			arrVal[i] = arr[i];
-			isArrInit[i] = false;
+			if (sourceArrInit != nullptr)
+                isArrInit[i] = sourceArrInit[i];
+            else
+                isArrInit[i] = false;
+            arrVal[i] = arr[i];
 		}
 	}
 }
@@ -249,8 +270,10 @@ std::ostream & operator<<(std::ostream & os, const Var & v) {
 	switch (v.type)
 	{
         case T_INT: {
-            if (v.isInit)
+            if (v.isInit) {
                 os << v.intVal;
+                // os << " at adress: " << &v;
+            }
             else
                 os << "None";
         } break;
