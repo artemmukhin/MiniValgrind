@@ -1,7 +1,7 @@
 #include "Operators.h"
+// print table of variables after run each operator in program
 #define PRINT_VAR_TABLE false
 
-// TO DO: DefOperator with assignment, e.g. 'arr A; ptr p = A;'
 
 std::string indentation(unsigned indent) {
 	std::string res = "";
@@ -11,15 +11,6 @@ std::string indentation(unsigned indent) {
 }
 
 // Block Operator
-void Block::addOperator(Operator* op) {
-	ops.push_back(op);
-}
-Block::Block() { ops = std::list<Operator*>(); }
-Block::Block(Operator* op) { addOperator(op); }
-Block::Block(Operator* op1, Operator* op2) {
-	addOperator(op1);
-	addOperator(op2);
-}
 Block::Block(std::list<Operator*> newOps) {
     ops = newOps;
 }
@@ -40,6 +31,7 @@ Block::~Block() {
 }
 void Block::run(Block* parentBlock) {
 	this->parentBlock = parentBlock;
+    // run each operator, and output exception if there is one
 	for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
 		try {
 			(*i)->run(this);
@@ -57,14 +49,15 @@ void Block::run(Block* parentBlock) {
 }
 Var* Block::findVar(const std::string& id) {
 	Block* currBlock = this;
-	std::map<std::string, Var*>::iterator result = this->vars.end();
-	while (result == vars.end() && currBlock != nullptr) {
+	std::map<std::string, Var*>::iterator result = vars.end();
+	// search var with given id in this block, then in parent block, ...
+    while (result == vars.end() && currBlock != nullptr) {
 		if (currBlock->vars.find(id) != currBlock->vars.end())
-			result = currBlock->vars.find(id); // win!
+			result = currBlock->vars.find(id);
 		else
 			currBlock = currBlock->parentBlock;
 	}
-	if (result != this->vars.end())
+	if (result != vars.end())
 		return result->second;
 	else
 		return nullptr;
@@ -75,6 +68,11 @@ void Block::addVar(const std::string& id, Var* newVar) {
 	}
 	else
 		throw UndefinedVarException("VarExpression with the same ID already exists");
+}
+void Block::addOperatorAfter(Operator *prevOp, Operator *op) {
+    std::list<Operator*>::iterator insertIter = std::find(ops.begin(), ops.end(), prevOp);
+    insertIter++;
+    ops.insert(insertIter, op);
 }
 void Block::printVarTable() const {
 	if (parentBlock) {
@@ -111,10 +109,10 @@ void Block::clearVarTable() {
 }
 
 
+
 // Expression Operator
 ExprOperator::ExprOperator(Expression* expr) : expr(expr) {}
 void ExprOperator::print(unsigned indent) {
-	//std::cout << "print exprop\n";
 	std::cout << indentation(indent);
 	expr->print();
 	std::cout << ";" << std::endl;
@@ -124,7 +122,7 @@ void ExprOperator::run(Block* parentBlock) {
 	Visitor v;
 	expr->accept(v);
 	expr->eval(parentBlock);
-	// do nothing...
+	// do nothing
 }
 
 
@@ -194,11 +192,10 @@ void AssignOperator::print(unsigned indent) {
 }
 AssignOperator::~AssignOperator() { delete value; delete index; }
 void AssignOperator::run(Block* parentBlock) {
-	// value may be: unaryexpr, binaryexpr, value, variable, funccal
 	Visitor v;
 	value->accept(v);
 	
-	Var* targetVar;
+	Var* targetVar; // variable to left of the '='
 	if (isDereferecing) {
 		targetVar = parentBlock->findVar(ID)->getPtrVal();
 	}
@@ -206,52 +203,51 @@ void AssignOperator::run(Block* parentBlock) {
 		targetVar = parentBlock->findVar(ID);
 	}
 	if (targetVar == nullptr) {
-		throw UndefinedVarException();
+		throw UndefinedVarException(); // variable with given id doesn't exist
 	}
 	else if (targetVar->getType() == T_INT && index != nullptr) {
 		throw InvalidTypeException("Int has no index");
 	}
-	/*else if (targetVar->getType() == T_ARR && index == nullptr) {
-		throw InvalidTypeException("Assign to array without index");
-	}*/
 
-
+    // check the type of expression to right of the '='
+    // for each value type check the type of target variable
 	// x = 5
 	if (v.type() == E_VAL) {
         switch (targetVar->getType()) {
-            case T_INT: {
+            case T_INT:
                 targetVar->setIntVal(value->eval(parentBlock).getIntVal());
-            } break;
-            case T_PTR: {
+                break;
+            case T_PTR:
                 if (index != nullptr)
-                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
+                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
+                                           (unsigned) index->eval(parentBlock).getIntVal());
                 else
                     throw InvalidTypeException("Assign int to ptr without index");
-            } break;
-            case T_ARR: {
+                break;
+            case T_ARR:
                 if (index != nullptr)
-                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
+                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
+                                           (unsigned) index->eval(parentBlock).getIntVal());
                 else
                     throw InvalidTypeException("Assign int to arr without index");
-            } break;
+                break;
         }
     }
 	// x = y
 	else if (v.type() == E_VAR) {
         VarExpression *valueVariable = dynamic_cast<VarExpression *>(value);
         Var *sourceVar = parentBlock->findVar(valueVariable->getID());
-        //sourceVar = value->eval();
         switch (targetVar->getType()) {
-            case T_INT: {
+            case T_INT:
                 if (sourceVar->getType() != T_INT)
                     throw InvalidTypeException("Assign non-int to int");
                 targetVar->setIntVal(sourceVar->getIntVal());
-            } break;
-            case T_PTR: {
+                break;
+            case T_PTR:
                 if (sourceVar->getType() == T_INT) {
                     if (index != nullptr)
                         targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
-                                               index->eval(parentBlock).getIntVal());
+                                               (unsigned) index->eval(parentBlock).getIntVal());
                     else
                         throw InvalidTypeException("Assign int to ptr");
                 }
@@ -259,91 +255,91 @@ void AssignOperator::run(Block* parentBlock) {
                     targetVar->setPtrVal(sourceVar->getPtrVal());
                 else if (sourceVar->getType() == T_ARR)
                     targetVar->setArrVal(sourceVar->getArr(), sourceVar->getArrSize(), sourceVar->getArrInit());
-                    //throw InvalidTypeException("Assign arr to ptr");
-            } break;
-            case T_ARR: {
+                break;
+            case T_ARR:
                 if (sourceVar->getType() != T_INT)
                     throw InvalidTypeException("Assign non-int to arr[int]");
-                targetVar->setArrAtVal(sourceVar->getIntVal(), index->eval(parentBlock).getIntVal());
-            } break;
+                targetVar->setArrAtVal(sourceVar->getIntVal(), (unsigned) index->eval(parentBlock).getIntVal());
+                break;
         }
     }
 
-	// x = malloc(2)
+	// x = malloc(2) (only malloc and free functions!)
 	else if (v.type() == E_FUNC) {
         Var returnValue = value->eval(parentBlock);
         switch (targetVar->getType()) {
-            case T_INT: {
+            case T_INT:
                 throw InvalidTypeException("Assign ptr to int");
-            } break;
-            case T_PTR: {
+                break;
+            case T_PTR:
                 targetVar->setArrVal(returnValue.getArr(), returnValue.getArrSize());
-            } break;
-            case T_ARR: {
-                if (index == nullptr) {
+                break;
+            case T_ARR:
+                if (index == nullptr)
                     targetVar->setArrVal(returnValue.getArr(), returnValue.getArrSize());
-                }
                 else
                     throw InvalidTypeException("Assign arr to arr element");
-            } break;
+                break;
         }
     }
 	// x = -(y + 5)
 	else if (v.type() == E_UNARY) {
         switch (targetVar->getType()) {
-            case T_INT: {
+            case T_INT:
                 targetVar->setIntVal(value->eval(parentBlock).getIntVal());
-            } break;
-            case T_PTR: {
+                break;
+            case T_PTR:
                 if (index != nullptr)
-                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
+                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
+                                           (unsigned) index->eval(parentBlock).getIntVal());
                 else
                     targetVar->setPtrVal(value->eval(parentBlock).getPtrVal());
-            } break;
-            case T_ARR: {
+                break;
+            case T_ARR:
                 if (index == nullptr)
                     throw InvalidTypeException("Assign to arr without index");
-                targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
-            } break;
+                targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
+                                       (unsigned) index->eval(parentBlock).getIntVal());
+                break;
         }
     }
 	// x = y + 2
 	else if (v.type() == E_BIN) {
         switch (targetVar->getType()) {
-            case T_INT: {
+            case T_INT:
                 targetVar->setIntVal(value->eval(parentBlock).getIntVal());
-            } break;
-            case T_PTR: {
+                break;
+            case T_PTR:
                 if (index != nullptr)
-                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
+                    targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
+                                           (unsigned) index->eval(parentBlock).getIntVal());
                 else
                     targetVar->setPtrVal(value->eval(parentBlock).getPtrVal());
-            } break;
-            case T_ARR: {
+                break;
+            case T_ARR:
                 if (index == nullptr)
                     throw InvalidTypeException("Assign to arr without index");
-                targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
-            } break;
+                targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
+                                       (unsigned) index->eval(parentBlock).getIntVal());
+                break;
         }
     }
 
 	else if (v.type() == E_ARRAT) {
 		switch (targetVar->getType()) {
-		case T_INT: {
-			targetVar->setIntVal(value->eval(parentBlock).getIntVal());
-			break;
-		}
-		case T_PTR: {
-			throw InvalidTypeException("Assign arr[i] to ptr");
-			break;
-		}
-		case T_ARR: {
-			if (index == nullptr)
-				throw InvalidTypeException("Assign to arr without index");
-			targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(), index->eval(parentBlock).getIntVal());
-			break;
-		}
-		}
+            case T_INT:
+                targetVar->setIntVal(value->eval(parentBlock).getIntVal());
+                break;
+            case T_PTR:
+                throw InvalidTypeException("Assign arr[i] to ptr");
+                break;
+            case T_ARR:
+                if (index == nullptr)
+                    throw InvalidTypeException("Assign to arr without index");
+                targetVar->setArrAtVal(value->eval(parentBlock).getIntVal(),
+                                       (unsigned) index->eval(parentBlock).getIntVal());
+                break;
+        }
 	}
 }
 
@@ -354,7 +350,7 @@ DefOperator::DefOperator(VType T, const std::string& ID, Expression* value) :
 	size = 0;
 }
 DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size, Expression* value) :
-	type(T), ID(ID), size(stoi(size)), value(value) {}
+	type(T), ID(ID), size((unsigned) stoi(size)), value(value) {}
 void DefOperator::print(unsigned indent) {
 	//std::cout << "print def\n";
 	std::cout << indentation(indent);
@@ -369,26 +365,17 @@ void DefOperator::print(unsigned indent) {
 	std::cout << ";" << std::endl;
 }
 void DefOperator::run(Block* parentBlock) {
-	//std::cout << "Run def operator" << std::endl;
 	if (type == T_ARR && size != 0) {
 		Var* newVar = new Var(T_ARR, size);
 		parentBlock->addVar(ID, newVar);
 	}
 	else {
 		Var* newVar = new Var(type);
-		if (value) {
-			if (type == T_INT) {
-				newVar->setIntVal(value->eval(parentBlock).getIntVal());
-			}
-			else if (type == T_PTR) {
-				newVar->setPtrVal(value->eval(parentBlock).getPtrVal());
-			}
-		}
 		parentBlock->addVar(ID, newVar);
-//        if (value != nullptr) {
-//            AssignOperator assignOp(ID, value);
-//            assignOp.run(parentBlock);
-//        }
+        if (value != nullptr) {
+            AssignOperator* assignOp = new AssignOperator(ID, value);
+            parentBlock->addOperatorAfter(this, assignOp);
+        }
 	}
 }
 
@@ -440,48 +427,35 @@ Var UnaryExpression::eval(Block* parentBlock) {
 	Var result;
 	Visitor v;
 	arg->accept(v);
-	switch (*op)
-	{
-	case '-':
-	{
-		result = Var((-1) * arg->eval(parentBlock).getIntVal());
-	}
-	break;
-	case '!':
-	{
-		result = ((arg->eval(parentBlock).getIntVal()) != 0 ? 0 : 1);
-	}
-	break;
-	case '&':
-	{
-		// to do: add non variable* arg
-		VarExpression* argVariable = dynamic_cast<VarExpression*>(arg);
-		UnaryExpression* argUnaryExpr = dynamic_cast<UnaryExpression*>(arg);
-		if (argVariable != nullptr)
-			result = Var(parentBlock->findVar(argVariable->getID()));
-		/*else if (argUnaryExpr != nullptr && *(argUnaryExpr->op) == '*') {
-			result = &(argUnaryExpr->eval(parentBlock));
-		}*/
-		else {
-			std::cout << "It's not working :(" << std::endl;
-		}
-	}
-	break;
-	case '*':
-	{
-		VarExpression* argVariable = dynamic_cast<VarExpression*>(arg);
-		UnaryExpression* argUnaryExpr = dynamic_cast<UnaryExpression*>(arg);
-		if (argVariable != nullptr)
-			result = *(parentBlock->findVar(argVariable->getID())->getPtrVal());
-		else if (argUnaryExpr != nullptr && *(argUnaryExpr->op) == '&') {
-			result = *(argUnaryExpr->eval(parentBlock).getPtrVal());
-		}
-		else {
-			std::cout << "It's not working :(" << std::endl;
-		} 
-	}
-	break;
-	}
+    VarExpression *argVariable;
+    UnaryExpression *argUnaryExpr;
+	switch (*op) {
+        case '-':
+            result = Var((-1) * arg->eval(parentBlock).getIntVal());
+            break;
+        case '!':
+            result = ((arg->eval(parentBlock).getIntVal()) != 0 ? 0 : 1);
+            break;
+        case '&':
+            // to do: add non variable* arg
+            argVariable = dynamic_cast<VarExpression *>(arg);
+            argUnaryExpr = dynamic_cast<UnaryExpression *>(arg);
+            if (argVariable != nullptr)
+                result = Var(parentBlock->findVar(argVariable->getID()));
+            else
+                std::cout << "It's not working :(" << std::endl;
+            break;
+        case '*':
+            argVariable = dynamic_cast<VarExpression *>(arg);
+            argUnaryExpr = dynamic_cast<UnaryExpression *>(arg);
+            if (argVariable != nullptr)
+                result = *(parentBlock->findVar(argVariable->getID())->getPtrVal());
+            else if (argUnaryExpr != nullptr && *(argUnaryExpr->op) == '&')
+                result = *(argUnaryExpr->eval(parentBlock).getPtrVal());
+            else
+                std::cout << "It's not working :(" << std::endl;
+            break;
+    }
 	return result;
 }
 void UnaryExpression::accept(Visitor &v) { v.visit(this); }
@@ -540,15 +514,13 @@ void BinaryExpression::accept(Visitor &v) { v.visit(this); }
 // Array at Expression
 ArrayAtExpression::ArrayAtExpression(std::string ID, Expression* index) : ID(ID), index(index) {}
 Var ArrayAtExpression::eval(Block* parentBlock) {
-	Var result;
 	Var* sourceArr = parentBlock->findVar(ID);
 	if (sourceArr == nullptr)
 		throw UndefinedVarException();
 	else if (sourceArr->getType() == T_INT && index != nullptr) {
 		throw InvalidTypeException("Int has no index");
 	}
-	result = Var(sourceArr->getArrAtVal(index->eval(parentBlock).getIntVal()));
-	return result;
+	return Var(sourceArr->getArrAtVal((unsigned) index->eval(parentBlock).getIntVal()));
 }
 void ArrayAtExpression::accept(Visitor &v) { v.visit(this); }
 void ArrayAtExpression::print() {
@@ -573,7 +545,7 @@ std::string VarExpression::getID() { return ID; }
 Var VarExpression::eval(Block* parentBlock) {
 	Var* thisVar = parentBlock->findVar(ID);
 	if (thisVar == nullptr)
-		std::cout << "No such variable";
+		throw UndefinedVarException();
 	return *thisVar;
 }
 void VarExpression::accept(Visitor &v) {

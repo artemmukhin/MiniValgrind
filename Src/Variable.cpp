@@ -7,7 +7,7 @@ Var::Var() {
 	arrVal = nullptr;
 	arrSize = 0;
 	isInit = false;
-	isArrInit = nullptr;
+    isArrInit = nullptr;
 }
 
 Var::Var(VType t) {
@@ -73,7 +73,6 @@ Var::Var(const int* arr, size_t s) {
 }
 
 Var::~Var() {
-    // std::cout << "Call ~Var() " << this << std::endl;
     delete arrVal;
 	delete isArrInit;
     intVal = 0;
@@ -84,7 +83,6 @@ Var::~Var() {
 }
 
 Var::Var(const Var& other) {
-	//std::cout << "Ohhh, copy constructor" << std::endl;
 	type = other.type;
 	arrSize = other.arrSize;
 	ptrVal = other.ptrVal;
@@ -103,14 +101,8 @@ Var::Var(const Var& other) {
 }
 
 Var& Var::operator=(const Var& other) {
-	//std::cout << "Ohhh, op=" << std::endl;
 	if (&other == this)
 		return *this;
-    //if (type != other.type) {
-    //    if (!(type == T_PTR && other.type == T_ARR))
-    //        throw InvalidTypeException("Assign between incompatible types");
-    //}
-    //else
 	    type = other.type;
 
     arrSize = other.arrSize;
@@ -135,55 +127,37 @@ VType Var::getType() {
 }
 
 int Var::getIntVal() {
-	//std::cout << "GETINTVAL type: " << type << std::endl;
-	if (type != T_INT) {
-		std::cout << "getIntVal ex" << std::endl;
+	if (type != T_INT)
 		throw InvalidTypeException("invalid value's type");
-	}
-	if (!isInit) {
-		//std::cout << "GETINTVAL not init" << std::endl;
+	if (!isInit)
 		throw NotInitVarException("not initialized int");
-	}
-	else {
-		//std::cout << "GETINTVAL ok" << std::endl;
+	else
 		return intVal;
-	}
 }
 
 Var* Var::getPtrVal() {
-	//std::cout << "getPtrVal: " << ptrVal << std::endl;
-	if (type != T_PTR) {
-		std::cout << "getPtrVal ex" << std::endl;
+	if (type != T_PTR)
 		throw InvalidTypeException("invalid value's type");
-	}
 	if (!isInit)
 		throw NotInitVarException("not initialized pointer");
-	else {
-		return ptrVal;
-	}
+	return ptrVal;
 }
 
 int Var::getArrAtVal(size_t i) {
-	if (type == T_INT) {
-		std::cout << "getArrAtVal ex" << std::endl;
+	if (type == T_INT)
 		throw InvalidTypeException("invalid value's type");
-	}
 	else if (arrVal != nullptr) {
 		if (i < arrSize) {
-			if (isArrInit[i]) {
+			if (isArrInit[i])
 				return arrVal[i];
-			}
-			else {
+			else
 				throw NotInitVarException("not initialized array element");
-			}
 		}
-		else {
+		else
 			throw EscapeFromBoundsException("escape from the bounds of array");
-		}
 	}
-	else {
+	else
         throw InvalidTypeException("ptr[i] (nullptr)");
-    }
 }
 
 size_t Var::getArrSize() {
@@ -208,10 +182,8 @@ bool* Var::getArrInit() {
 }
 
 void Var::setIntVal(int newVal) {
-	if (type != T_INT) {
-		std::cout << "setIntVal ex" << std::endl;
+	if (type != T_INT)
 		throw InvalidTypeException("invalid value's type");
-	}
 	else {
 		intVal = newVal;
 		isInit = true;
@@ -222,17 +194,14 @@ void Var::setPtrVal(Var* newVal) {
 	if (type != T_PTR)
 		throw InvalidTypeException("invalid value's type");
 	else if (newVal != nullptr) {
-		//std::cout << "setPtrVal: " << newVal << std::endl;
 		ptrVal = newVal;
 		isInit = true;
 	}
 }
 
 void Var::setArrAtVal(int newVal, size_t i) {
-	if (type == T_INT) {
-		std::cout << "setArrAtVal ex" << std::endl;
+	if (type == T_INT)
 		throw InvalidTypeException("assign to int[i]");
-	}
     else if (arrVal != nullptr) {
         if (i < arrSize) {
             arrVal[i] = newVal;
@@ -246,11 +215,8 @@ void Var::setArrAtVal(int newVal, size_t i) {
 }
 
 void Var::setArrVal(const int* arr, size_t s, bool* sourceArrInit) {
-	if (type == T_INT) {
-		std::cout << "setArrVal ex" << std::endl;
+	if (type == T_INT)
 		throw InvalidTypeException("invalid value's type");
-	}
-	//std::cout << "setArrVal: " << (arr == nullptr) << " size=" << s << std::endl;
 	if (arr != nullptr && s != 0) {
 		arrSize = s;
 		isInit = true;
@@ -267,17 +233,14 @@ void Var::setArrVal(const int* arr, size_t s, bool* sourceArrInit) {
 }
 
 std::ostream & operator<<(std::ostream & os, const Var & v) {
-	switch (v.type)
-	{
-        case T_INT: {
-            if (v.isInit) {
+	switch (v.type) {
+        case T_INT:
+            if (v.isInit)
                 os << v.intVal;
-                // os << " at adress: " << &v;
-            }
             else
                 os << "None";
-        } break;
-        case T_PTR: {
+            break;
+        case T_PTR:
             if (v.isInit)
                 os << v.ptrVal;
             else
@@ -288,13 +251,13 @@ std::ostream & operator<<(std::ostream & os, const Var & v) {
                     os << v.arrVal[i] << ", ";
                 os << v.arrVal[v.arrSize - 1] << "]";
             }
-        } break;
-        case T_ARR: {
+            break;
+        case T_ARR:
             os << "[";
             for (size_t i = 0; i < v.arrSize - 1; i++)
                 os << v.arrVal[i] << ", ";
             os << v.arrVal[v.arrSize - 1] << "]";
-        } break;
+            break;
 	}
 	return os;
 }

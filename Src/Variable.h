@@ -6,14 +6,17 @@
 enum VType;
 enum EType;
 
+
+// Every variable has three values: integer, pointer and array
+
 class Var {
 	VType type;
 	int intVal;
 	Var* ptrVal;
 	int* arrVal;
 	size_t arrSize;
-	bool isInit;
-	bool* isArrInit;
+	bool isInit;  // isInit == false, if this is uninitialized variable
+	bool* isArrInit;  // isArrInit[i] == false, if this[i] is uninitialized element of array
 public:
 	Var();
 	Var(VType t);

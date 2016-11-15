@@ -1,12 +1,14 @@
 #pragma once
-
 #include "Types.h"
+
 class UnaryExpression;
 class BinaryExpression;
 class Value;
 class VarExpression;
 class FunctionCall;
 class ArrayAtExpression;
+
+// Visitor pattern
 
 class Visitor {
 private:

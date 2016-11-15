@@ -4,6 +4,7 @@
 #include "Variable.h"
 #include "Visitor.h"
 #include "Exceptions.h"
+#include <algorithm>
 
 //enum VType;
 //enum EType;
@@ -32,14 +33,10 @@ public:
 
 class Block : public Operator {
 private:
-	std::list<Operator*> ops;
-	std::map<std::string, Var*> vars;
+	std::list<Operator*> ops; // list of operators
+	std::map<std::string, Var*> vars; // table of variables
 	Block* parentBlock;
-	void addOperator(Operator* op);
 public:
-	Block();
-	Block(Operator* op);
-	Block(Operator* op1, Operator* op2);
 	Block(std::list<Operator*> newOps);
 	size_t size();
 	void print(unsigned indent = 0);
@@ -47,7 +44,8 @@ public:
 	void run(Block* parentBlock = nullptr);
 	Var* findVar(const std::string& id);
 	void addVar(const std::string& id, Var* newVar);
-	void printVarTable() const;
+    void addOperatorAfter(Operator* prevOp, Operator* op);
+    void printVarTable() const;
 	void clearVarTable();
 };
 
