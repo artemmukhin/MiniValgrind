@@ -16,6 +16,7 @@
 if                              return IF;
 else                            return ELSE;
 while                           return WHILE;
+for                             return FOR;
 return                          return RETURN;
 int                             return INT;
 ptr                             return PTR;
@@ -26,6 +27,8 @@ arr                             return ARR;
 !=                              return NE;
 &&                              return AND;
 \|\|                            return OR;
+\+\+                            return INC;
+\-\-                            return DEC;
 #begin                          return P_BEGIN;
 #end                            return P_END;
 

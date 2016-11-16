@@ -33,7 +33,7 @@ Block::~Block() {
 void Block::run(Block* parentBlock) {
     this->parentBlock = parentBlock;
     // run each operator, and output exception if there is one
-    for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
+    for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end() && !isReturned(); i++) {
         try {
             (*i)->run(this);
         }
@@ -69,11 +69,6 @@ void Block::addVar(const std::string& id, Var* newVar) {
     }
     else
         throw UndefinedVarException("VarExpression with the same ID already exists");
-}
-void Block::addOperatorAfter(Operator *prevOp, Operator *op) {
-    std::list<Operator*>::iterator insertIter = std::find(ops.begin(), ops.end(), prevOp);
-    insertIter++;
-    ops.insert(insertIter, op);
 }
 void Block::printVarTable() const {
     if (parentBlock) {
@@ -113,6 +108,17 @@ void Block::changeReturnValue(Var resultVal) {
     Var* blockResult = findVar("#RESULT");
     if (blockResult != nullptr)
         *blockResult = resultVal;
+    else
+        throw UndefinedVarException("Block has no #RESULT for return");
+}
+bool Block::isReturned() {
+    Var* blockResult = findVar("#RESULT");
+    if (blockResult != nullptr) {
+        if (blockResult->isVarInit())
+            return true;
+        else
+            return false;
+    }
     else
         throw UndefinedVarException("Block has no #RESULT for return");
 }
@@ -182,6 +188,42 @@ void WhileOperator::run(Block* parentBlock) {
         condResult = cond->eval(parentBlock).getIntVal();
     }
 }
+
+
+// For operator
+ForOperator::ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body) :
+        initOp(initOp), cond(cond), stepOp(stepOp), body(body) {}
+ForOperator::~ForOperator() {
+    delete initOp;
+    delete cond;
+    delete stepOp;
+}
+void ForOperator::print(unsigned int indent) {
+    std::cout << indentation(indent) << "for ";
+    std::cout << "(";
+    initOp->print();
+    std::cout << "; ";
+    cond->print();
+    std::cout << "; ";
+    stepOp->print();
+    std::cout << ")";
+    std::cout << std::endl;
+    body->print(indent);
+}
+void ForOperator::run(Block *parentBlock) {
+    Block* forBlock = new Block(std::list<Operator*>(1, initOp));
+    //initOp->run(parentBlock);
+    forBlock->run(parentBlock);
+    int condResult = cond->eval(forBlock).getIntVal();
+    while (condResult == 1) {
+        body->run(forBlock);
+        body->clearVarTable();
+        stepOp->run(forBlock);
+        condResult = cond->eval(forBlock).getIntVal();
+    }
+    forBlock->clearVarTable();
+}
+
 
 
 // Assign Operator
@@ -394,7 +436,7 @@ void DefOperator::run(Block* parentBlock) {
         parentBlock->addVar(ID, newVar);
         if (value != nullptr) {
             AssignOperator* assignOp = new AssignOperator(ID, value);
-            parentBlock->addOperatorAfter(this, assignOp);
+            assignOp->run(parentBlock);
         }
     }
 }
@@ -424,7 +466,8 @@ Var FunctionCall::eval(Block* parentBlock) {
         resVar = Var(new int[sizemem], sizemem);
     }
     else if (ID == "print" && args.size() == 1) {
-        std::cout << "PRINT: ";
+        if (PRINT_VAR_TABLE)
+            std::cout << "PRINT: ";
         std::cout << args.front()->eval(parentBlock) << std::endl;
     }
     else if (ID == "printVarTable" && args.size() == 0) {
@@ -501,6 +544,47 @@ Var UnaryExpression::eval(Block* parentBlock) {
             else
                 std::cout << "It's not working :(" << std::endl;
             break;
+        default:
+            if (strcmp(op, ".++") == 0) {
+                argVariable = dynamic_cast<VarExpression *>(arg);
+                if (argVariable != nullptr) {
+                    Var* sourceVar = parentBlock->findVar(argVariable->getID());
+                    result = Var(*(parentBlock->findVar(argVariable->getID())));
+                    sourceVar->setIntVal(sourceVar->getIntVal() + 1);
+                }
+                else
+                    throw InvalidTypeException();
+            }
+            else if (strcmp(op, "++.") == 0) {
+                argVariable = dynamic_cast<VarExpression *>(arg);
+                if (argVariable != nullptr) {
+                    Var* sourceVar = parentBlock->findVar(argVariable->getID());
+                    sourceVar->setIntVal(sourceVar->getIntVal() + 1);
+                    result = Var(*(parentBlock->findVar(argVariable->getID())));
+                }
+                else
+                    throw InvalidTypeException();
+            }
+            else if (strcmp(op, ".--") == 0) {
+                argVariable = dynamic_cast<VarExpression *>(arg);
+                if (argVariable != nullptr) {
+                    Var* sourceVar = parentBlock->findVar(argVariable->getID());
+                    result = Var(*(parentBlock->findVar(argVariable->getID())));
+                    sourceVar->setIntVal(sourceVar->getIntVal() - 1);
+                }
+                else
+                    throw InvalidTypeException();
+            }
+            else if (strcmp(op, "--.") == 0) {
+                argVariable = dynamic_cast<VarExpression *>(arg);
+                if (argVariable != nullptr) {
+                    Var* sourceVar = parentBlock->findVar(argVariable->getID());
+                    sourceVar->setIntVal(sourceVar->getIntVal() - 1);
+                    result = Var(*(parentBlock->findVar(argVariable->getID())));
+                }
+                else
+                    throw InvalidTypeException();
+            }
     }
     return result;
 }
@@ -616,6 +700,7 @@ Function::~Function() {
     params.clear();
 }
 Var Function::eval(const std::vector<Var>& args) {
+    body->clearVarTable();
     if (args.size() != params.size())
         throw InvalidFunctionCall();
     body->addVar("#RESULT", new Var(returnType));
@@ -641,9 +726,6 @@ void Program::run() {
 void Program::setFuncs(std::list<Function *> f) {
     funcs = f;
 }
-//std::list<Function *> Program::getFuncs() {
-//    return funcs;
-//}
 Var Program::runFunction(std::string &id, std::vector<Var>& args) {
     for (auto func : funcs) {
         if (func->getId() == id)

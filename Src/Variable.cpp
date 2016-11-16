@@ -247,9 +247,16 @@ std::ostream & operator<<(std::ostream & os, const Var & v) {
                 os << "None";
             if (v.arrVal != nullptr) {
                 os << ", arrVal = [";
-                for (size_t i = 0; i < v.arrSize - 1; i++)
-                    os << v.arrVal[i] << ", ";
-                os << v.arrVal[v.arrSize - 1] << "]";
+                for (size_t i = 0; i < v.arrSize - 1; i++) {
+                    if (v.isArrInit[i])
+                        os << v.arrVal[i] << ", ";
+                    else
+                        os << "None" << ", ";
+                }
+                if (v.isArrInit[v.arrSize - 1])
+                    os << v.arrVal[v.arrSize - 1] << "]";
+                else
+                    os << "None" << "]";
             }
             break;
         case T_ARR:
@@ -260,4 +267,8 @@ std::ostream & operator<<(std::ostream & os, const Var & v) {
             break;
     }
     return os;
+}
+
+bool Var::isVarInit() const {
+    return isInit;
 }

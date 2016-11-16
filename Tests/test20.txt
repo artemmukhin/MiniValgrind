@@ -1,0 +1,77 @@
+#begin
+int main() {
+	int n = 20;
+	arr prime[21];
+	int i = 0;
+	while (i < n + 1) {
+		prime[i] = 1;
+		i = i + 1;
+	}
+	prime[0] = 0;
+	prime[1] = 0;
+	i = 2;
+	while (i <= n) {
+		if (prime[i] == 1) {
+			if (i * i <= n) {
+				int j = i * i;
+				while (j <= n) {
+					prime[j] = 0;
+					j = j + i;
+				}
+			}
+		}
+		i = i + 1;
+	}
+
+	i = 0;
+	while (i <= n) {
+		if (prime[i] == 1) {
+			print(i);
+		}
+		i = i + 1;
+	}
+}
+#end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for (int i = 0; i < 10; i = i + 1) {
+    b = b + 1;
+}
+
+
+int i = 0;
+while (i < 10) {
+    b = b + 1;
+
+}
+
+
+
+

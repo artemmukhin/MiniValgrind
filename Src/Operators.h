@@ -42,10 +42,10 @@ public:
     void run(Block* parentBlock = nullptr);
     Var* findVar(const std::string& id);
     void addVar(const std::string& id, Var* newVar);
-    void addOperatorAfter(Operator* prevOp, Operator* op);
     void printVarTable() const;
     void clearVarTable();
     void changeReturnValue(Var resultVal);
+    bool isReturned(); // true, if #RESULT is already init
 };
 
 class ExprOperator : public Operator {
@@ -79,6 +79,19 @@ public:
     virtual void print(unsigned indent = 0);
     virtual ~WhileOperator();
     virtual void run(Block * parentBlock = nullptr);
+};
+
+class ForOperator : public Operator {
+private:
+    Operator* initOp;
+    Expression* cond;
+    Operator* stepOp;
+    Block* body;
+public:
+    ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body);
+    virtual ~ForOperator();
+    virtual void print(unsigned int indent) override;
+    virtual void run(Block *parentBlock) override;
 };
 
 class AssignOperator : public Operator {
