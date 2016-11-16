@@ -1,26 +1,15 @@
-{
-    arr A[8];
-    A[0] = 2; A[1] = 5; A[2] = 6;
-    A[3] = 8; A[4] = 10; A[5] = 12;
-    A[6] = 15; A[7] = 23;
-
-    int key = 10;
-    int res = -1;
-    int left = 0;
-    int right = 7;
-    int mid;
-    while ((left <= right) && (res == -1)) {
-        mid = (left + right) / 2;
-        if (A[mid] == key) {
-            res = mid;
-        }
-        else {
-            if (A[mid] < key) {
-                left = mid + 1;
-            }
-            if (A[mid] > key) {
-                right = mid - 1;
-            }
-        }
-    }
+#begin
+int f(int par) {
+    return par + 5;
 }
+
+int g(int p1, int p2, int p3) {
+    return 1;
+}
+
+int main() {
+    int x = 7;
+    int y = x + 15;
+    print( y * 10 + g(0, 0, 0) ); // "221"
+}
+#end

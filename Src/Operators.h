@@ -28,6 +28,7 @@ public:
     virtual void accept(Visitor &v) = 0;
 };
 
+
 class Block : public Operator {
 private:
     std::list<Operator*> ops; // list of operators
@@ -44,6 +45,7 @@ public:
     void addOperatorAfter(Operator* prevOp, Operator* op);
     void printVarTable() const;
     void clearVarTable();
+    void changeReturnValue(Var resultVal);
 };
 
 class ExprOperator : public Operator {
@@ -106,13 +108,24 @@ public:
     virtual void run(Block* parentBlock);
 };
 
+class ReturnOperator : public Operator {
+private:
+    Expression* value;
+public:
+    ReturnOperator(Expression *value);
+    void run(Block* parentBlock);
+
+    virtual ~ReturnOperator();
+
+    virtual void print(unsigned int indent) override;
+};
 
 class FunctionCall : public Expression {
 private:
     std::string ID;
-    std::list<Expression*> args;
+    std::vector<Expression*> args;
 public:
-    FunctionCall(const std::string& ID, const std::list<Expression*>& args);
+    FunctionCall(const std::string& ID, const std::vector<Expression*>& args);
     virtual void print();
     virtual ~FunctionCall();
     virtual Var eval(Block* parentBlock = nullptr);
@@ -174,4 +187,50 @@ public:
     std::string getID();
     virtual Var eval(Block* parentBlock);
     virtual void accept(Visitor &v);
+};
+
+
+// parameters of a function
+class Parameter {
+public:
+    Parameter(VType paramType, const std::string &id);
+    virtual ~Parameter();
+    VType getParamType() const;
+    const std::string &getId() const;
+
+private:
+    VType paramType;
+    std::string id;
+};
+
+class Function {
+private:
+    std::string id;
+    VType returnType;
+    std::vector<Parameter*> params;
+    Block* body;
+public:
+    Function(const std::string &id, VType returnType, const std::vector<Parameter *> &params, Block *body);
+    virtual ~Function();
+    const std::string &getId() const;
+    Var eval(const std::vector<Var>& args);
+};
+
+// Singleton pattern
+class Program {
+private:
+    std::list<Function*> funcs;
+    Program() {}
+    ~Program() {}
+    Program(Program const&) = delete;
+    Program&operator=(Program const&) = delete;
+public:
+    static Program& Instance() {
+        static Program p;
+        return p;
+    }
+    void setFuncs(std::list<Function*> f);
+    //std::list<Function*> getFuncs();
+    void run();
+    Var runFunction(std::string& id, std::vector<Var>& args);
 };

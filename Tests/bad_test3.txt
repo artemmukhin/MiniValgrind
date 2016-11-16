@@ -1,6 +1,8 @@
-{
+#begin
+int main() {
     arr A[5];
     A[1] = 2;
     int x = A[1];
     int y = A[2];
 }
+#end

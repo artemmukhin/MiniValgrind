@@ -16,6 +16,7 @@
 if                              return IF;
 else                            return ELSE;
 while                           return WHILE;
+return                          return RETURN;
 int                             return INT;
 ptr                             return PTR;
 arr                             return ARR;
@@ -25,6 +26,8 @@ arr                             return ARR;
 !=                              return NE;
 &&                              return AND;
 \|\|                            return OR;
+#begin                          return P_BEGIN;
+#end                            return P_END;
 
 [0-9]+                          {
                                     yylval = yytext;

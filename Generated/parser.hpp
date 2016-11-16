@@ -48,18 +48,20 @@ extern int yydebug;
     IF = 258,
     ELSE = 259,
     WHILE = 260,
-    EXIT = 261,
-    EQ = 262,
-    LE = 263,
-    GE = 264,
-    NE = 265,
-    AND = 266,
-    OR = 267,
-    NUM = 268,
-    ID = 269,
-    INT = 270,
-    PTR = 271,
-    ARR = 272
+    RETURN = 261,
+    P_BEGIN = 262,
+    P_END = 263,
+    EQ = 264,
+    LE = 265,
+    GE = 266,
+    NE = 267,
+    AND = 268,
+    OR = 269,
+    NUM = 270,
+    ID = 271,
+    INT = 272,
+    PTR = 273,
+    ARR = 274
   };
 #endif
 

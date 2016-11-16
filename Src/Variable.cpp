@@ -122,7 +122,7 @@ Var& Var::operator=(const Var& other) {
     return *this;
 }
 
-VType Var::getType() {
+VType Var::getType() const {
     return type;
 }
 

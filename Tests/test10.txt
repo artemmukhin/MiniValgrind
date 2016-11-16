@@ -1,4 +1,5 @@
-{
+#begin
+int main() {
     int a = 24;
     int b = 20;
     int temp;
@@ -11,3 +12,4 @@
     int res = a;
     print(res); // "4"
 }
+#end

@@ -28,6 +28,7 @@ Block::~Block() {
     for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
         delete *i;
     }
+    clearVarTable();
 }
 void Block::run(Block* parentBlock) {
     this->parentBlock = parentBlock;
@@ -107,7 +108,14 @@ void Block::clearVarTable() {
     }
     vars.clear();
 }
-
+void Block::changeReturnValue(Var resultVal) {
+    // to do: stop running parentBlock !!!
+    Var* blockResult = findVar("#RESULT");
+    if (blockResult != nullptr)
+        *blockResult = resultVal;
+    else
+        throw UndefinedVarException("Block has no #RESULT for return");
+}
 
 
 // Expression Operator
@@ -264,19 +272,31 @@ void AssignOperator::run(Block* parentBlock) {
         }
     }
 
-    // x = malloc(2) (only malloc and free functions!)
+    // x = malloc(2)
     else if (v.type() == E_FUNC) {
         Var returnValue = value->eval(parentBlock);
         switch (targetVar->getType()) {
             case T_INT:
-                throw InvalidTypeException("Assign ptr to int");
+                if (returnValue.getType() == T_INT)
+                    targetVar->setIntVal(returnValue.getIntVal());
+                else
+                    throw InvalidTypeException("Assign ptr to int");
                 break;
             case T_PTR:
-                targetVar->setArrVal(returnValue.getArr(), returnValue.getArrSize());
+                if (returnValue.getType() != T_INT)
+                    targetVar->setArrVal(returnValue.getArr(), returnValue.getArrSize());
+                else
+                    throw InvalidTypeException();
                 break;
             case T_ARR:
-                if (index == nullptr)
-                    targetVar->setArrVal(returnValue.getArr(), returnValue.getArrSize());
+                if (index == nullptr) {
+                    if (returnValue.getType() != T_INT)
+                        targetVar->setArrVal(returnValue.getArr(), returnValue.getArrSize());
+                    else
+                        throw InvalidTypeException();
+                }
+                else if (returnValue.getType() == T_INT)
+                    targetVar->setArrAtVal(returnValue.getIntVal(), (unsigned) index->eval(parentBlock).getIntVal());
                 else
                     throw InvalidTypeException("Assign arr to arr element");
                 break;
@@ -381,11 +401,11 @@ void DefOperator::run(Block* parentBlock) {
 
 
 // Function call
-FunctionCall::FunctionCall(const std::string& ID, const std::list<Expression*>& args) :
+FunctionCall::FunctionCall(const std::string& ID, const std::vector<Expression*>& args) :
     ID(ID), args(args) {}
 void FunctionCall::print() {
     std::cout << ID << "(";
-    for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); i++) {
+    for (auto i = args.begin(); i != args.end(); i++) {
         if (i != args.begin())
             std::cout << ", ";
         (*i)->print();
@@ -393,7 +413,7 @@ void FunctionCall::print() {
     std::cout << ")";
 }
 FunctionCall::~FunctionCall() {
-    for (std::list<Expression*>::iterator i = args.begin(); i != args.end(); i++) {
+    for (auto i = args.begin(); i != args.end(); i++) {
         delete *i;
     }
 }
@@ -410,9 +430,35 @@ Var FunctionCall::eval(Block* parentBlock) {
     else if (ID == "printVarTable" && args.size() == 0) {
         parentBlock->printVarTable();
     }
+    else {
+        try {
+            Program& p = Program::Instance();
+            std::vector<Var> argsVar;
+            for (auto arg : args)
+                argsVar.push_back(arg->eval(parentBlock));
+            resVar = p.runFunction(ID, argsVar);
+        }
+        catch (UndefinedFunctionException) {
+            std::cout << "UndefinedFunctionException!!!" << std::endl;
+        }
+    }
     return resVar;
 }
 void FunctionCall::accept(Visitor & v) { v.visit(this); }
+
+ReturnOperator::ReturnOperator(Expression* value) : value(value) {}
+ReturnOperator::~ReturnOperator() {
+    delete value;
+}
+void ReturnOperator::print(unsigned int indent) {
+    std::cout << indentation(indent) << "return ";
+    value->print();
+    std::cout << ";" << std::endl;
+}
+void ReturnOperator::run(Block* parentBlock) {
+    parentBlock->changeReturnValue( value->eval(parentBlock) );
+}
+
 
 
 // Unary Expression
@@ -524,7 +570,6 @@ Var ArrayAtExpression::eval(Block* parentBlock) {
 }
 void ArrayAtExpression::accept(Visitor &v) { v.visit(this); }
 void ArrayAtExpression::print() {
-    //std::cout << ID << "[" << index->eval().getIntVal() << "]";
     std::cout << ID << "[" << "index" << "]";
 }
 
@@ -550,4 +595,59 @@ Var VarExpression::eval(Block* parentBlock) {
 }
 void VarExpression::accept(Visitor &v) {
     v.visit(this);
+}
+
+
+Parameter::Parameter(VType paramType, const std::string &id) : paramType(paramType), id(id) {}
+Parameter::~Parameter() {}
+VType Parameter::getParamType() const {
+    return paramType;
+}
+const std::string &Parameter::getId() const {
+    return id;
+}
+
+Function::Function(const std::string &id, VType returnType, const std::vector<Parameter *> &params, Block *body) :
+        id(id), returnType(returnType), params(params), body(body) {}
+Function::~Function() {
+    for (auto param : params) {
+        delete param;
+    }
+    params.clear();
+}
+Var Function::eval(const std::vector<Var>& args) {
+    if (args.size() != params.size())
+        throw InvalidFunctionCall();
+    body->addVar("#RESULT", new Var(returnType));
+    for (size_t i = 0; i < params.size(); i++) {
+        if (args[i].getType() == params[i]->getParamType())
+            body->addVar(params[i]->getId(), new Var(args[i]));
+        else
+            throw InvalidFunctionCall();
+    }
+    body->run(nullptr);
+    return *(body->findVar("#RESULT"));
+}
+const std::string &Function::getId() const {
+    return id;
+}
+
+void Program::run() {
+    for (auto func : funcs) {
+        if (func->getId() == "main")
+            func->eval(std::vector<Var>());
+    }
+}
+void Program::setFuncs(std::list<Function *> f) {
+    funcs = f;
+}
+//std::list<Function *> Program::getFuncs() {
+//    return funcs;
+//}
+Var Program::runFunction(std::string &id, std::vector<Var>& args) {
+    for (auto func : funcs) {
+        if (func->getId() == id)
+            return func->eval(args);
+    }
+    throw UndefinedFunctionException();
 }

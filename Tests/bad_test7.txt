@@ -1,4 +1,5 @@
-{
+#begin
+int main() {
     ptr p;
     int i = 0;
     int foo = 10;
@@ -10,3 +11,4 @@
     int x = *p;
     print(x);
 }
+#end

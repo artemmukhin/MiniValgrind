@@ -17,12 +17,17 @@
         Block* block;
         std::list<Operator*> opers;
         Expression* expr;
-        std::list<Expression*> args;
+        std::vector<Expression*> args;
+        Function* func;
+        std::list<Function*> funcs;
+        Program* prog;
+        Parameter* param;
+        std::vector<Parameter*> params;
     } YYSTYPE;
     #define YYSTYPE YYSTYPE
 %}
 
-%token IF ELSE WHILE EXIT
+%token IF ELSE WHILE RETURN P_BEGIN P_END
 %token EQ LE GE NE AND OR
 %token NUM ID
 %token INT PTR ARR
@@ -33,11 +38,30 @@
 %type<opers> OPS
 %type<expr> EXPR EXPR2 TERM VAL ARG
 %type<args> ARGS
+%type<func> FUNC
+%type<funcs> FUNCS
+%type<prog> PROGRAM
+%type<param> PARAM
+%type<params> PARAMS
 
 %%
 
-PROGRAM: BLOCK                          { $1->run(nullptr); delete $1; }
+PROGRAM: P_BEGIN FUNCS P_END            { Program& p = Program::Instance(); p.setFuncs($2); p.run(); }
 ;
+
+FUNCS:  FUNC                            { $$.clear(); $$.push_back($1); }
+|       FUNCS FUNC                      { $$ = $1; $$.push_back($2); }
+;
+
+FUNC:   INT ID '(' PARAMS ')' BLOCK     { $$ = new Function($2, T_INT, $4, $6); }
+;
+
+PARAM:  INT ID                          { $$ = new Parameter(T_INT, $2); }
+;
+
+PARAMS:                                 { $$.clear(); }
+|       PARAM                           { $$.clear(); $$.push_back($1); }
+|       PARAMS ',' PARAM                { $$ = $1; $$.push_back($3); }
 
 BLOCK:  '{' OPS '}'                     { $$ = new Block($2); }
 
@@ -57,6 +81,7 @@ OP:     EXPR ';'                        { $$ = new ExprOperator($1); }
 |       ID '=' EXPR ';'                 { $$ = new AssignOperator($1, $3); }
 |       '*' ID '=' EXPR ';'             { $$ = new AssignOperator($2, $4, true); }
 |       ID '[' EXPR2 ']' '=' EXPR2 ';'  { $$ = new AssignOperator($1, $6, $3); }
+|       RETURN EXPR ';'                 { $$ = new ReturnOperator($2); }
 ;
 
 EXPR:   EXPR2

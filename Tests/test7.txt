@@ -1,4 +1,5 @@
-{
+#begin
+int main() {
     int x = 5;
     int y = 10;
     int z;
@@ -10,3 +11,4 @@
     }
     print(z); // "-42"
 }
+#end

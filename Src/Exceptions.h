@@ -30,3 +30,17 @@ public:
     UndefinedVarException() : std::runtime_error("Undefined variable") {}
     UndefinedVarException(std::string s) : std::runtime_error("Undefined variable: " + s) {}
 };
+
+class UndefinedFunctionException : public std::runtime_error
+{
+public:
+    UndefinedFunctionException() : std::runtime_error("Undefined function") {}
+    UndefinedFunctionException(std::string s) : std::runtime_error("Undefined function: " + s) {}
+};
+
+class InvalidFunctionCall : public std::runtime_error
+{
+public:
+    InvalidFunctionCall() : std::runtime_error("Invalid function call") {}
+    InvalidFunctionCall(std::string s) : std::runtime_error("Invalid function call" + s) {}
+};

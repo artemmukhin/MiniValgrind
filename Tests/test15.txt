@@ -1,9 +1,13 @@
-{
-    int x = 0;
-    int y = 1;
-    while (x < 4) {
-        y = y * 2;
-        x = x + 1;
-    }
+#begin
+int f(int par) {
+    int res = par + 5;
+    return res;
 }
 
+int main() {
+    int x = 7;
+    int y;
+    y = f(x);
+    print(y); // "12"
+}
+#end

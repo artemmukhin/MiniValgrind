@@ -1,6 +1,8 @@
-{
+#begin
+int main() {
     int x;
     x = 7;
     ptr p;
     x = p;
 }
+#end

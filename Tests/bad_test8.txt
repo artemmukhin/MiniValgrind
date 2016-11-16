@@ -1,4 +1,5 @@
-{
+#begin
+int main() {
     arr A[3];
     A[0] = 10;
     A[2] = 20;
@@ -8,3 +9,4 @@
     print(x);
     int y = p[1];
 }
+#end

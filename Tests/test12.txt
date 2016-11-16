@@ -1,4 +1,5 @@
-{
+#begin
+int main() {
     ptr p;
     p = malloc(3);
     p[0] = 10;
@@ -8,3 +9,4 @@
     int y = p[1] + p[2];
     print(y); // "50"
 }
+#end

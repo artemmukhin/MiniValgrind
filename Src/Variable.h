@@ -27,7 +27,7 @@ public:
     ~Var();
     Var(const Var& other);
     Var& operator=(const Var& other);
-    VType getType();
+    VType getType() const;
     int getIntVal();
     Var* getPtrVal();
     int getArrAtVal(size_t i);

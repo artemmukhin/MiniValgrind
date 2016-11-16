@@ -1,4 +1,5 @@
-{
+#begin
+int main() {
     int x = -12;
     int y;
     ptr p;
@@ -9,3 +10,4 @@
     y = *p;
     print(y); // "5"
 }
+#end

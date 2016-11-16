@@ -1,12 +1,12 @@
-{
-    int a = 24;
-    int b = 20;
-    int temp;
-    while (b != 0) {
-        a = a % b;
-        temp = a;
-        a = b;
-        b = temp;
-    }
-    int res = a;
+#begin
+int sum(int x, int y) {
+    return x + y;
 }
+
+int main() {
+    int a = 15;
+    int b = 20;
+    int z = sum(a, b);
+    print(z); // "35"
+}
+#end
