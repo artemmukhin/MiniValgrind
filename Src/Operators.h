@@ -2,12 +2,10 @@
 
 #include "Types.h"
 #include "Variable.h"
-#include "Visitor.h"
 #include "Exceptions.h"
 #include <algorithm>
 
 class Block;
-class Visitor;
 
 class Operator {
 protected:
@@ -25,7 +23,6 @@ public:
     virtual ~Expression() {}
     virtual void print() = 0;
     virtual Var eval(Block* parentBlock) = 0;
-    virtual void accept(Visitor &v) = 0;
 };
 
 
@@ -143,7 +140,6 @@ public:
     virtual ~FunctionCall();
     virtual Var eval(Block* parentBlock = nullptr);
     //int* returnValue(Block* parentBlock);
-    virtual void accept(Visitor & v);
 };
 
 class UnaryExpression : public Expression {
@@ -155,7 +151,6 @@ public:
     virtual void print();
     virtual ~UnaryExpression();
     Var eval(Block* parentBlock);
-    void accept(Visitor &v);
 };
 
 class BinaryExpression : public Expression {
@@ -167,7 +162,6 @@ public:
     virtual void print();
     virtual ~BinaryExpression();
     virtual Var eval(Block* parentBlock);
-    virtual void accept(Visitor &v);
 };
 
 class ArrayAtExpression : public Expression {
@@ -177,7 +171,6 @@ private:
 public:
     ArrayAtExpression(std::string ID, Expression* index);
     virtual Var eval(Block* parentBlock);
-    virtual void accept(Visitor &v);
     virtual void print();
 };
 
@@ -188,7 +181,6 @@ public:
     Value(const std::string& val);
     virtual void print();
     Var eval(Block* parentBlock = nullptr);
-    void accept(Visitor &v);
 };
 
 class VarExpression : public Expression {
@@ -199,7 +191,6 @@ public:
     virtual void print();
     std::string getID();
     virtual Var eval(Block* parentBlock);
-    virtual void accept(Visitor &v);
 };
 
 
