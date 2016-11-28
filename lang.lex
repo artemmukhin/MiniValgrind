@@ -1,10 +1,14 @@
 %{
-   #include <string>
-   #define YYSTYPE std::string
-   #include "parser.hpp"
-   void yyerror(char *s);
+    #define YYSTYPE MyDataType
+    #include <iostream>
+    #include <string>
+    #include "../Src/Types.h"
+    #include "../Src/Variable.h"
+    #include "../Src/Operators.h"
+    #include "parser.hpp"
+    extern MyDataType yylval;
+    void yyerror(char *s);
 %}
-
 %option yylineno
 %option noyywrap
 
@@ -33,12 +37,12 @@ arr                             return ARR;
 #end                            return P_END;
 
 [0-9]+                          {
-                                    yylval = yytext;
+                                    yylval.str = yytext;
                                     return NUM;
                                 }
 
 [a-zA-Z_][a-zA-Z0-9_]*          {
-                                    yylval = yytext;
+                                    yylval.str = yytext;
                                     return ID;
                                 }
 

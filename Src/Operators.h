@@ -238,3 +238,18 @@ public:
     void run();
     Var runFunction(std::string& id, std::vector<Var>& args);
 };
+
+
+typedef struct {
+    std::string str;
+    Operator* oper;
+    Block* block;
+    std::list<Operator*> opers;
+    Expression* expr;
+    std::vector<Expression*> args;
+    Function* func;
+    std::list<Function*> funcs;
+    Program* prog;
+    Parameter* param;
+    std::vector<Parameter*> params;
+} MyDataType;

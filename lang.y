@@ -1,30 +1,16 @@
 %{
+    #define YYSTYPE MyDataType
     #include <iostream>
+    #include <string>
     #include "../Src/Types.h"
     #include "../Src/Variable.h"
     #include "../Src/Operators.h"
     extern int yylineno;
-    extern int yylex();
-    
+    int yylex();
     void yyerror(char *s) {
-      std::cerr << s << ", line " << yylineno << std::endl;
-      exit(1);
+       std::cerr << s << ", line " << yylineno << std::endl;
+       exit(1);
     }
-
-    typedef struct {
-        std::string str;
-        Operator* oper;
-        Block* block;
-        std::list<Operator*> opers;
-        Expression* expr;
-        std::vector<Expression*> args;
-        Function* func;
-        std::list<Function*> funcs;
-        Program* prog;
-        Parameter* param;
-        std::vector<Parameter*> params;
-    } YYSTYPE;
-    #define YYSTYPE YYSTYPE
 %}
 
 %token IF ELSE WHILE FOR RETURN P_BEGIN P_END

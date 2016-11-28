@@ -358,15 +358,12 @@ FILE *yyin = NULL, *yyout = NULL;
 
 typedef int yy_state_type;
 
+#define YY_FLEX_LEX_COMPAT
 extern int yylineno;
 
 int yylineno = 1;
 
-extern char *yytext;
-#ifdef yytext_ptr
-#undef yytext_ptr
-#endif
-#define yytext_ptr yytext
+extern char yytext[];
 
 static yy_state_type yy_get_previous_state (void );
 static yy_state_type yy_try_NUL_trans (yy_state_type current_state  );
@@ -381,6 +378,9 @@ static void yynoreturn yy_fatal_error (yyconst char* msg  );
 	yyleng = (int) (yy_cp - yy_bp); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
+	if ( yyleng >= YYLMAX ) \
+		YY_FATAL_ERROR( "token too large, exceeds YYLMAX" ); \
+	yy_flex_strncpy( yytext, (yytext_ptr), yyleng + 1 ); \
 	(yy_c_buf_p) = yy_cp;
 
 #define YY_NUM_RULES 25
@@ -521,15 +521,25 @@ int yy_flex_debug = 0;
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-char *yytext;
+#ifndef YYLMAX
+#define YYLMAX 8192
+#endif
+
+char yytext[YYLMAX];
+char *yytext_ptr;
 #line 1 "lang.lex"
 #line 2 "lang.lex"
-   #include <string>
-   #define YYSTYPE std::string
-   #include "parser.hpp"
-   void yyerror(char *s);
+    #define YYSTYPE MyDataType
+    #include <iostream>
+    #include <string>
+    #include "../Src/Types.h"
+    #include "../Src/Variable.h"
+    #include "../Src/Operators.h"
+    #include "parser.hpp"
+    extern MyDataType yylval;
+    void yyerror(char *s);
 
-#line 533 "Generated/lexer.cpp"
+#line 543 "Generated/lexer.cpp"
 
 #define INITIAL 0
 #define STR 1
@@ -748,10 +758,10 @@ YY_DECL
 		}
 
 	{
-#line 13 "lang.lex"
+#line 17 "lang.lex"
 
 
-#line 755 "Generated/lexer.cpp"
+#line 765 "Generated/lexer.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -821,137 +831,137 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 15 "lang.lex"
+#line 19 "lang.lex"
 ; // comment
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 16 "lang.lex"
+#line 20 "lang.lex"
 return IF;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 17 "lang.lex"
+#line 21 "lang.lex"
 return ELSE;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 18 "lang.lex"
+#line 22 "lang.lex"
 return WHILE;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 19 "lang.lex"
+#line 23 "lang.lex"
 return FOR;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 20 "lang.lex"
+#line 24 "lang.lex"
 return RETURN;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 21 "lang.lex"
+#line 25 "lang.lex"
 return INT;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 22 "lang.lex"
+#line 26 "lang.lex"
 return PTR;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 23 "lang.lex"
+#line 27 "lang.lex"
 return ARR;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 24 "lang.lex"
+#line 28 "lang.lex"
 return EQ;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 25 "lang.lex"
+#line 29 "lang.lex"
 return LE;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 26 "lang.lex"
+#line 30 "lang.lex"
 return GE;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 27 "lang.lex"
+#line 31 "lang.lex"
 return NE;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 28 "lang.lex"
+#line 32 "lang.lex"
 return AND;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 29 "lang.lex"
+#line 33 "lang.lex"
 return OR;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 30 "lang.lex"
+#line 34 "lang.lex"
 return INC;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 31 "lang.lex"
+#line 35 "lang.lex"
 return DEC;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 32 "lang.lex"
+#line 36 "lang.lex"
 return P_BEGIN;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 33 "lang.lex"
+#line 37 "lang.lex"
 return P_END;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 35 "lang.lex"
+#line 39 "lang.lex"
 {
-                                    yylval = yytext;
+                                    yylval.str = yytext;
                                     return NUM;
                                 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 40 "lang.lex"
+#line 44 "lang.lex"
 {
-                                    yylval = yytext;
+                                    yylval.str = yytext;
                                     return ID;
                                 }
 	YY_BREAK
 case 22:
 /* rule 22 can match eol */
 YY_RULE_SETUP
-#line 45 "lang.lex"
+#line 49 "lang.lex"
 ; // whitespace
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 46 "lang.lex"
+#line 50 "lang.lex"
 { return *yytext; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 47 "lang.lex"
+#line 51 "lang.lex"
 yyerror("Invalid character");
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 49 "lang.lex"
+#line 53 "lang.lex"
 ECHO;
 	YY_BREAK
-#line 955 "Generated/lexer.cpp"
+#line 965 "Generated/lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STR):
 	yyterminate();
@@ -1965,7 +1975,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 49 "lang.lex"
+#line 53 "lang.lex"
 
 
 
