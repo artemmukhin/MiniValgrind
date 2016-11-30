@@ -73,8 +73,8 @@ Var::Var(const int* arr, size_t s) {
 }
 
 Var::~Var() {
-    delete arrVal;
-    delete isArrInit;
+    delete[] arrVal;
+    delete[] isArrInit;
     intVal = 0;
     ptrVal = nullptr;
     arrVal = nullptr;
@@ -103,7 +103,7 @@ Var::Var(const Var& other) {
 Var& Var::operator=(const Var& other) {
     if (&other == this)
         return *this;
-        type = other.type;
+    type = other.type;
 
     arrSize = other.arrSize;
     ptrVal = other.ptrVal;

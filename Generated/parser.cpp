@@ -1351,7 +1351,7 @@ yyreduce:
     {
         case 2:
 #line 35 "lang.y" /* yacc.c:1646  */
-    { Program& p = Program::Instance(); p.setFuncs((yyvsp[-1].funcs)); p.run(); }
+    { Program& p = Program::Instance(); p.setFuncs((yyvsp[-1].funcs)); p.run(); p.deleteFuncs(); }
 #line 1356 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 

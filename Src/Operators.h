@@ -33,9 +33,9 @@ private:
     Block* parentBlock;
 public:
     Block(std::list<Operator*> newOps);
+    ~Block();
     size_t size();
     void print(unsigned indent = 0);
-    ~Block();
     void run(Block* parentBlock = nullptr);
     Var* findVar(const std::string& id);
     void addVar(const std::string& id, Var* newVar);
@@ -84,6 +84,7 @@ private:
     Expression* cond;
     Operator* stepOp;
     Block* body;
+    Block* ownBlock; // this block contains local variables, created in for-loop
 public:
     ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body);
     virtual ~ForOperator();
@@ -111,9 +112,11 @@ private:
     std::string ID;
     unsigned size;
     Expression* value;
+    AssignOperator* assignOp;
 public:
     DefOperator(VType T, const std::string& ID, Expression* value);
     DefOperator(VType T, const std::string& ID, const std::string& size, Expression* value);
+    virtual ~DefOperator();
     virtual void print(unsigned indent = 0);
     virtual void run(Block* parentBlock);
 };
@@ -124,9 +127,7 @@ private:
 public:
     ReturnOperator(Expression *value);
     void run(Block* parentBlock);
-
     virtual ~ReturnOperator();
-
     virtual void print(unsigned int indent) override;
 };
 
@@ -170,6 +171,7 @@ private:
     Expression* index;
 public:
     ArrayAtExpression(std::string ID, Expression* index);
+    virtual ~ArrayAtExpression();
     virtual Var eval(Block* parentBlock);
     virtual void print();
 };
@@ -179,6 +181,7 @@ private:
     int val;
 public:
     Value(const std::string& val);
+    virtual ~Value();
     virtual void print();
     Var eval(Block* parentBlock = nullptr);
 };
@@ -188,6 +191,7 @@ private:
     std::string ID;
 public:
     VarExpression(const std::string& ID);
+    virtual ~VarExpression();
     virtual void print();
     std::string getID();
     virtual Var eval(Block* parentBlock);
@@ -235,6 +239,7 @@ public:
     }
     void setFuncs(std::list<Function*> f);
     //std::list<Function*> getFuncs();
+    void deleteFuncs();
     void run();
     Var runFunction(std::string& id, std::vector<Var>& args);
 };

@@ -67,8 +67,10 @@ void Block::addVar(const std::string& id, Var* newVar) {
     if (findVar(id) == nullptr) {
         vars.insert(std::pair<std::string, Var*>(id, newVar));
     }
-    else
+    else {
         throw UndefinedVarException("VarExpression with the same ID already exists");
+        delete newVar;
+    }
 }
 void Block::printVarTable() const {
     if (parentBlock) {
@@ -79,15 +81,15 @@ void Block::printVarTable() const {
         std::cout << "**** Variables ****" << std::endl;
     for (std::map<std::string, Var*>::const_iterator i = vars.begin(); i != vars.end(); i++) {
         switch ((*i).second->getType()) {
-        case T_INT:
-            std::cout << "int ";
-            break;
-        case T_PTR:
-            std::cout << "ptr ";
-            break;
-        case T_ARR:
-            std::cout << "arr ";
-            break;
+            case T_INT:
+                std::cout << "int ";
+                break;
+            case T_PTR:
+                std::cout << "ptr ";
+                break;
+            case T_ARR:
+                std::cout << "arr ";
+                break;
         }
         std::cout << (*i).first << " = " << *((*i).second) << std::endl;
     }
@@ -140,7 +142,7 @@ void ExprOperator::run(Block* parentBlock) {
 
 // If Operator
 IfOperator::IfOperator(Expression* cond, Block* thenBlock, Block* elseBlock) :
-    cond(cond), thenBlock(thenBlock), elseBlock(elseBlock) {}
+        cond(cond), thenBlock(thenBlock), elseBlock(elseBlock) {}
 void IfOperator::print(unsigned indent) {
     std::cout << indentation(indent);
     std::cout << "if ";
@@ -152,7 +154,11 @@ void IfOperator::print(unsigned indent) {
         elseBlock->print(indent);
     }
 }
-IfOperator::~IfOperator() { delete cond; }
+IfOperator::~IfOperator() {
+    delete cond;
+    delete thenBlock;
+    delete elseBlock;
+}
 void IfOperator::run(Block* parentBlock) {
     int condResult = cond->eval(parentBlock).getIntVal();
     if (condResult == 1) {
@@ -170,14 +176,14 @@ void IfOperator::run(Block* parentBlock) {
 
 // While Operator
 WhileOperator::WhileOperator(Expression* cond, Block* body) :
-    cond(cond), body(body) {}
+        cond(cond), body(body) {}
 void WhileOperator::print(unsigned indent) {
     std::cout << indentation(indent) << "while ";
     cond->print();
     std::cout << std::endl;
     body->print(indent);
 }
-WhileOperator::~WhileOperator() { delete cond; }
+WhileOperator::~WhileOperator() { delete cond; delete body; }
 void WhileOperator::run(Block* parentBlock) {
     int condResult = cond->eval(parentBlock).getIntVal();
     while (condResult == 1) {
@@ -190,11 +196,14 @@ void WhileOperator::run(Block* parentBlock) {
 
 // For operator
 ForOperator::ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body) :
-        initOp(initOp), cond(cond), stepOp(stepOp), body(body) {}
+        initOp(initOp), cond(cond), stepOp(stepOp), body(body) {
+    ownBlock = new Block(std::list<Operator*>(1, initOp));
+}
 ForOperator::~ForOperator() {
-    delete initOp;
     delete cond;
     delete stepOp;
+    delete ownBlock;
+    delete body;
 }
 void ForOperator::print(unsigned int indent) {
     std::cout << indentation(indent) << "for ";
@@ -209,36 +218,37 @@ void ForOperator::print(unsigned int indent) {
     body->print(indent);
 }
 void ForOperator::run(Block *parentBlock) {
-    Block* forBlock = new Block(std::list<Operator*>(1, initOp));
-    //initOp->run(parentBlock);
-    forBlock->run(parentBlock);
-    int condResult = cond->eval(forBlock).getIntVal();
+    ownBlock->run(parentBlock);
+    int condResult = cond->eval(ownBlock).getIntVal();
     while (condResult == 1) {
-        body->run(forBlock);
+        body->run(ownBlock);
         body->clearVarTable();
-        stepOp->run(forBlock);
-        condResult = cond->eval(forBlock).getIntVal();
+        stepOp->run(ownBlock);
+        condResult = cond->eval(ownBlock).getIntVal();
     }
-    forBlock->clearVarTable();
+    ownBlock->clearVarTable();
 }
 
 
 
 // Assign Operator
 AssignOperator::AssignOperator(const std::string& ID, Expression* value, bool isDereferecing) :
-    ID(ID), value(value), isDereferecing(isDereferecing) {
+        ID(ID), value(value), isDereferecing(isDereferecing) {
     index = nullptr;
 }
 AssignOperator::AssignOperator(const std::string& ID, Expression* value, Expression* index) :
-    ID(ID), value(value), index(index) {
+        ID(ID), value(value), index(index) {
     isDereferecing = false;
+}
+AssignOperator::~AssignOperator() {
+    delete value;
+    delete index;
 }
 void AssignOperator::print(unsigned indent) {
     std::cout << indentation(indent) << (isDereferecing ? "*" : "") << ID << " = ";
     value->print();
     std::cout << ";" << std::endl;
 }
-AssignOperator::~AssignOperator() { delete value; delete index; }
 void AssignOperator::run(Block* parentBlock) {
     Var* targetVar; // variable to left of the '='
     if (isDereferecing)
@@ -282,11 +292,17 @@ void AssignOperator::run(Block* parentBlock) {
 
 // Define Operator
 DefOperator::DefOperator(VType T, const std::string& ID, Expression* value) :
-    type(T), ID(ID), value(value) {
+        type(T), ID(ID), value(value) {
     size = 0;
+    if (value)
+        assignOp = new AssignOperator(ID, value);
 }
 DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size, Expression* value) :
-    type(T), ID(ID), size((unsigned) stoi(size)), value(value) {}
+        type(T), ID(ID), size((unsigned) stoi(size)), value(value) {
+    if (value)
+        assignOp = new AssignOperator(ID, value);
+}
+DefOperator::~DefOperator() { delete assignOp; }
 void DefOperator::print(unsigned indent) {
     //std::cout << "print def\n";
     std::cout << indentation(indent);
@@ -309,8 +325,8 @@ void DefOperator::run(Block* parentBlock) {
         Var* newVar = new Var(type);
         parentBlock->addVar(ID, newVar);
         if (value != nullptr) {
-            AssignOperator* assignOp = new AssignOperator(ID, value);
             assignOp->run(parentBlock);
+            // возможно, здесь удаляется Exspression* (в ~AssignOperator()), который должен использоваться потом
         }
     }
 }
@@ -318,7 +334,7 @@ void DefOperator::run(Block* parentBlock) {
 
 // Function call
 FunctionCall::FunctionCall(const std::string& ID, const std::vector<Expression*>& args) :
-    ID(ID), args(args) {}
+        ID(ID), args(args) {}
 void FunctionCall::print() {
     std::cout << ID << "(";
     for (auto i = args.begin(); i != args.end(); i++) {
@@ -379,7 +395,7 @@ void ReturnOperator::run(Block* parentBlock) {
 
 // Unary Expression
 UnaryExpression::UnaryExpression(const char* op, Expression* arg) :
-    op(op), arg(arg) {}
+        op(op), arg(arg) {}
 void UnaryExpression::print() {
     std::cout << op;
     arg->print();
@@ -448,7 +464,7 @@ Var UnaryExpression::eval(Block* parentBlock) {
 
 // Binary Expression
 BinaryExpression::BinaryExpression(const char* op, Expression* arg1, Expression* arg2) :
-    op(op), arg1(arg1), arg2(arg2) {}
+        op(op), arg1(arg1), arg2(arg2) {}
 void BinaryExpression::print() {
     std::cout << "(";
     arg1->print();
@@ -492,6 +508,7 @@ Var BinaryExpression::eval(Block* parentBlock) {
 
 // Array at Expression
 ArrayAtExpression::ArrayAtExpression(std::string ID, Expression* index) : ID(ID), index(index) {}
+ArrayAtExpression::~ArrayAtExpression() { delete index; }
 Var ArrayAtExpression::eval(Block* parentBlock) {
     Var* sourceArr = parentBlock->findVar(ID);
     if (sourceArr == nullptr)
@@ -508,6 +525,7 @@ void ArrayAtExpression::print() {
 
 // Value Expression
 Value::Value(const std::string& val) : val(atoi(val.c_str())) {}
+Value::~Value() { }
 void Value::print() { std::cout << val; }
 Var Value::eval(Block* parentBlock) {
     return Var(val);
@@ -516,6 +534,9 @@ Var Value::eval(Block* parentBlock) {
 
 // Variable Expression
 VarExpression::VarExpression(const std::string& ID) : ID(ID) {}
+VarExpression::~VarExpression() {
+
+}
 void VarExpression::print() { std::cout << ID; }
 std::string VarExpression::getID() { return ID; }
 Var VarExpression::eval(Block* parentBlock) {
@@ -542,6 +563,7 @@ Function::~Function() {
         delete param;
     }
     params.clear();
+    delete body;
 }
 Var Function::eval(const std::vector<Var>& args) {
     body->clearVarTable();
@@ -563,12 +585,18 @@ const std::string &Function::getId() const {
 
 void Program::run() {
     for (auto func : funcs) {
-        if (func->getId() == "main")
+        if (func->getId() == "main") {
             func->eval(std::vector<Var>());
+            break;
+        }
     }
 }
 void Program::setFuncs(std::list<Function *> f) {
     funcs = f;
+}
+void Program::deleteFuncs() {
+    for (auto func : funcs)
+        delete func;
 }
 Var Program::runFunction(std::string &id, std::vector<Var>& args) {
     for (auto func : funcs) {

@@ -32,7 +32,7 @@
 
 %%
 
-PROGRAM: P_BEGIN FUNCS P_END            { Program& p = Program::Instance(); p.setFuncs($2); p.run(); }
+PROGRAM: P_BEGIN FUNCS P_END            { Program& p = Program::Instance(); p.setFuncs($2); p.run(); p.deleteFuncs(); }
 ;
 
 FUNCS:  FUNC                            { $$.clear(); $$.push_back($1); }

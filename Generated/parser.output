@@ -169,7 +169,7 @@ ARG (56)
     налево: 59, направо: 57 58
 
 
-State 0
+Состояние 0
 
     0 $accept: . PROGRAM $end
 
@@ -178,7 +178,7 @@ State 0
     PROGRAM  переход в состояние 2
 
 
-State 1
+Состояние 1
 
     1 PROGRAM: P_BEGIN . FUNCS P_END
 
@@ -188,21 +188,21 @@ State 1
     FUNC   переход в состояние 5
 
 
-State 2
+Состояние 2
 
     0 $accept: PROGRAM . $end
 
     $end  сдвиг, и переход в состояние 6
 
 
-State 3
+Состояние 3
 
     4 FUNC: INT . ID '(' PARAMS ')' BLOCK
 
     ID  сдвиг, и переход в состояние 7
 
 
-State 4
+Состояние 4
 
     1 PROGRAM: P_BEGIN FUNCS . P_END
     3 FUNCS: FUNCS . FUNC
@@ -213,42 +213,42 @@ State 4
     FUNC  переход в состояние 9
 
 
-State 5
+Состояние 5
 
     2 FUNCS: FUNC .
 
     $default  вывод с использованием правила 2 (FUNCS)
 
 
-State 6
+Состояние 6
 
     0 $accept: PROGRAM $end .
 
     $default  принять
 
 
-State 7
+Состояние 7
 
     4 FUNC: INT ID . '(' PARAMS ')' BLOCK
 
     '('  сдвиг, и переход в состояние 10
 
 
-State 8
+Состояние 8
 
     1 PROGRAM: P_BEGIN FUNCS P_END .
 
     $default  вывод с использованием правила 1 (PROGRAM)
 
 
-State 9
+Состояние 9
 
     3 FUNCS: FUNCS FUNC .
 
     $default  вывод с использованием правила 3 (FUNCS)
 
 
-State 10
+Состояние 10
 
     4 FUNC: INT ID '(' . PARAMS ')' BLOCK
 
@@ -260,21 +260,21 @@ State 10
     PARAMS  переход в состояние 13
 
 
-State 11
+Состояние 11
 
     5 PARAM: INT . ID
 
     ID  сдвиг, и переход в состояние 14
 
 
-State 12
+Состояние 12
 
     7 PARAMS: PARAM .
 
     $default  вывод с использованием правила 7 (PARAMS)
 
 
-State 13
+Состояние 13
 
     4 FUNC: INT ID '(' PARAMS . ')' BLOCK
     8 PARAMS: PARAMS . ',' PARAM
@@ -283,14 +283,14 @@ State 13
     ','  сдвиг, и переход в состояние 16
 
 
-State 14
+Состояние 14
 
     5 PARAM: INT ID .
 
     $default  вывод с использованием правила 5 (PARAM)
 
 
-State 15
+Состояние 15
 
     4 FUNC: INT ID '(' PARAMS ')' . BLOCK
 
@@ -299,7 +299,7 @@ State 15
     BLOCK  переход в состояние 18
 
 
-State 16
+Состояние 16
 
     8 PARAMS: PARAMS ',' . PARAM
 
@@ -308,7 +308,7 @@ State 16
     PARAM  переход в состояние 19
 
 
-State 17
+Состояние 17
 
     9 BLOCK: '{' . OPS '}'
 
@@ -338,21 +338,21 @@ State 17
     VAL    переход в состояние 42
 
 
-State 18
+Состояние 18
 
     4 FUNC: INT ID '(' PARAMS ')' BLOCK .
 
     $default  вывод с использованием правила 4 (FUNC)
 
 
-State 19
+Состояние 19
 
     8 PARAMS: PARAMS ',' PARAM .
 
     $default  вывод с использованием правила 8 (PARAMS)
 
 
-State 20
+Состояние 20
 
    13 OP: IF . '(' EXPR ')' BLOCK ELSE BLOCK
    14   | IF . '(' EXPR ')' BLOCK
@@ -360,21 +360,21 @@ State 20
     '('  сдвиг, и переход в состояние 43
 
 
-State 21
+Состояние 21
 
    15 OP: WHILE . '(' EXPR ')' BLOCK
 
     '('  сдвиг, и переход в состояние 44
 
 
-State 22
+Состояние 22
 
    16 OP: FOR . '(' OP1 EXPR ';' OP1 ')' BLOCK
 
     '('  сдвиг, и переход в состояние 45
 
 
-State 23
+Состояние 23
 
    17 OP: RETURN . EXPR ';'
 
@@ -394,7 +394,7 @@ State 23
     VAL    переход в состояние 42
 
 
-State 24
+Состояние 24
 
    48 VAL: INC . VAL
 
@@ -411,7 +411,7 @@ State 24
     VAL  переход в состояние 49
 
 
-State 25
+Состояние 25
 
    49 VAL: DEC . VAL
 
@@ -428,14 +428,14 @@ State 25
     VAL  переход в состояние 50
 
 
-State 26
+Состояние 26
 
    43 VAL: NUM .
 
     $default  вывод с использованием правила 43 (VAL)
 
 
-State 27
+Состояние 27
 
    23 OP1: ID . '=' EXPR ';'
    25    | ID . '[' EXPR2 ']' '=' EXPR2 ';'
@@ -450,7 +450,7 @@ State 27
     $default  вывод с использованием правила 51 (VAL)
 
 
-State 28
+Состояние 28
 
    18 OP1: INT . ID ';'
    19    | INT . ID '=' EXPR ';'
@@ -458,7 +458,7 @@ State 28
     ID  сдвиг, и переход в состояние 54
 
 
-State 29
+Состояние 29
 
    20 OP1: PTR . ID ';'
    21    | PTR . ID '=' EXPR ';'
@@ -466,14 +466,14 @@ State 29
     ID  сдвиг, и переход в состояние 55
 
 
-State 30
+Состояние 30
 
    22 OP1: ARR . ID '[' NUM ']' ';'
 
     ID  сдвиг, и переход в состояние 56
 
 
-State 31
+Состояние 31
 
    50 VAL: '(' . EXPR ')'
 
@@ -493,7 +493,7 @@ State 31
     VAL    переход в состояние 42
 
 
-State 32
+Состояние 32
 
    24 OP1: '*' . ID '=' EXPR ';'
    54 VAL: '*' . VAL
@@ -511,7 +511,7 @@ State 32
     VAL  переход в состояние 59
 
 
-State 33
+Состояние 33
 
    44 VAL: '-' . VAL
 
@@ -528,7 +528,7 @@ State 33
     VAL  переход в состояние 60
 
 
-State 34
+Состояние 34
 
    45 VAL: '!' . VAL
 
@@ -545,7 +545,7 @@ State 34
     VAL  переход в состояние 61
 
 
-State 35
+Состояние 35
 
    53 VAL: '&' . VAL
 
@@ -562,7 +562,7 @@ State 35
     VAL  переход в состояние 62
 
 
-State 36
+Состояние 36
 
     9 BLOCK: '{' OPS . '}'
    11 OPS: OPS . OP
@@ -593,21 +593,21 @@ State 36
     VAL    переход в состояние 42
 
 
-State 37
+Состояние 37
 
    10 OPS: OP .
 
     $default  вывод с использованием правила 10 (OPS)
 
 
-State 38
+Состояние 38
 
    12 OP: OP1 .
 
     $default  вывод с использованием правила 12 (OP)
 
 
-State 39
+Состояние 39
 
    26 OP1: EXPR . ';'
    28 EXPR: EXPR . EQ EXPR2
@@ -630,7 +630,7 @@ State 39
     '<'  сдвиг, и переход в состояние 73
 
 
-State 40
+Состояние 40
 
    27 EXPR: EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -644,7 +644,7 @@ State 40
     $default  вывод с использованием правила 27 (EXPR)
 
 
-State 41
+Состояние 41
 
    36 EXPR2: TERM .
    41 TERM: TERM . '*' VAL
@@ -656,7 +656,7 @@ State 41
     $default  вывод с использованием правила 36 (EXPR2)
 
 
-State 42
+Состояние 42
 
    40 TERM: VAL .
    46 VAL: VAL . INC
@@ -668,7 +668,7 @@ State 42
     $default  вывод с использованием правила 40 (TERM)
 
 
-State 43
+Состояние 43
 
    13 OP: IF '(' . EXPR ')' BLOCK ELSE BLOCK
    14   | IF '(' . EXPR ')' BLOCK
@@ -689,7 +689,7 @@ State 43
     VAL    переход в состояние 42
 
 
-State 44
+Состояние 44
 
    15 OP: WHILE '(' . EXPR ')' BLOCK
 
@@ -709,7 +709,7 @@ State 44
     VAL    переход в состояние 42
 
 
-State 45
+Состояние 45
 
    16 OP: FOR '(' . OP1 EXPR ';' OP1 ')' BLOCK
 
@@ -733,7 +733,7 @@ State 45
     VAL    переход в состояние 42
 
 
-State 46
+Состояние 46
 
    51 VAL: ID .
    52    | ID . '(' ARGS ')'
@@ -745,7 +745,7 @@ State 46
     $default  вывод с использованием правила 51 (VAL)
 
 
-State 47
+Состояние 47
 
    54 VAL: '*' . VAL
 
@@ -762,7 +762,7 @@ State 47
     VAL  переход в состояние 59
 
 
-State 48
+Состояние 48
 
    17 OP: RETURN EXPR . ';'
    28 EXPR: EXPR . EQ EXPR2
@@ -785,7 +785,7 @@ State 48
     '<'  сдвиг, и переход в состояние 73
 
 
-State 49
+Состояние 49
 
    46 VAL: VAL . INC
    47    | VAL . DEC
@@ -799,7 +799,7 @@ State 49
     $default  вывод с использованием правила 48 (VAL)
 
 
-State 50
+Состояние 50
 
    46 VAL: VAL . INC
    47    | VAL . DEC
@@ -813,7 +813,7 @@ State 50
     $default  вывод с использованием правила 49 (VAL)
 
 
-State 51
+Состояние 51
 
    52 VAL: ID '(' . ARGS ')'
 
@@ -837,7 +837,7 @@ State 51
     ARG    переход в состояние 88
 
 
-State 52
+Состояние 52
 
    23 OP1: ID '=' . EXPR ';'
 
@@ -857,7 +857,7 @@ State 52
     VAL    переход в состояние 42
 
 
-State 53
+Состояние 53
 
    25 OP1: ID '[' . EXPR2 ']' '=' EXPR2 ';'
    55 VAL: ID '[' . EXPR2 ']'
@@ -877,7 +877,7 @@ State 53
     VAL    переход в состояние 42
 
 
-State 54
+Состояние 54
 
    18 OP1: INT ID . ';'
    19    | INT ID . '=' EXPR ';'
@@ -886,7 +886,7 @@ State 54
     '='  сдвиг, и переход в состояние 92
 
 
-State 55
+Состояние 55
 
    20 OP1: PTR ID . ';'
    21    | PTR ID . '=' EXPR ';'
@@ -895,14 +895,14 @@ State 55
     '='  сдвиг, и переход в состояние 94
 
 
-State 56
+Состояние 56
 
    22 OP1: ARR ID . '[' NUM ']' ';'
 
     '['  сдвиг, и переход в состояние 95
 
 
-State 57
+Состояние 57
 
    28 EXPR: EXPR . EQ EXPR2
    29     | EXPR . LE EXPR2
@@ -925,7 +925,7 @@ State 57
     '<'  сдвиг, и переход в состояние 73
 
 
-State 58
+Состояние 58
 
    24 OP1: '*' ID . '=' EXPR ';'
    51 VAL: ID .
@@ -939,7 +939,7 @@ State 58
     $default  вывод с использованием правила 51 (VAL)
 
 
-State 59
+Состояние 59
 
    46 VAL: VAL . INC
    47    | VAL . DEC
@@ -953,7 +953,7 @@ State 59
     $default  вывод с использованием правила 54 (VAL)
 
 
-State 60
+Состояние 60
 
    44 VAL: '-' VAL .
    46    | VAL . INC
@@ -967,7 +967,7 @@ State 60
     $default  вывод с использованием правила 44 (VAL)
 
 
-State 61
+Состояние 61
 
    45 VAL: '!' VAL .
    46    | VAL . INC
@@ -981,7 +981,7 @@ State 61
     $default  вывод с использованием правила 45 (VAL)
 
 
-State 62
+Состояние 62
 
    46 VAL: VAL . INC
    47    | VAL . DEC
@@ -995,21 +995,21 @@ State 62
     $default  вывод с использованием правила 53 (VAL)
 
 
-State 63
+Состояние 63
 
     9 BLOCK: '{' OPS '}' .
 
     $default  вывод с использованием правила 9 (BLOCK)
 
 
-State 64
+Состояние 64
 
    11 OPS: OPS OP .
 
     $default  вывод с использованием правила 11 (OPS)
 
 
-State 65
+Состояние 65
 
    28 EXPR: EXPR EQ . EXPR2
 
@@ -1028,7 +1028,7 @@ State 65
     VAL    переход в состояние 42
 
 
-State 66
+Состояние 66
 
    29 EXPR: EXPR LE . EXPR2
 
@@ -1047,7 +1047,7 @@ State 66
     VAL    переход в состояние 42
 
 
-State 67
+Состояние 67
 
    30 EXPR: EXPR GE . EXPR2
 
@@ -1066,7 +1066,7 @@ State 67
     VAL    переход в состояние 42
 
 
-State 68
+Состояние 68
 
    31 EXPR: EXPR NE . EXPR2
 
@@ -1085,7 +1085,7 @@ State 68
     VAL    переход в состояние 42
 
 
-State 69
+Состояние 69
 
    34 EXPR: EXPR AND . EXPR2
 
@@ -1104,7 +1104,7 @@ State 69
     VAL    переход в состояние 42
 
 
-State 70
+Состояние 70
 
    35 EXPR: EXPR OR . EXPR2
 
@@ -1123,14 +1123,14 @@ State 70
     VAL    переход в состояние 42
 
 
-State 71
+Состояние 71
 
    26 OP1: EXPR ';' .
 
     $default  вывод с использованием правила 26 (OP1)
 
 
-State 72
+Состояние 72
 
    32 EXPR: EXPR '>' . EXPR2
 
@@ -1149,7 +1149,7 @@ State 72
     VAL    переход в состояние 42
 
 
-State 73
+Состояние 73
 
    33 EXPR: EXPR '<' . EXPR2
 
@@ -1168,7 +1168,7 @@ State 73
     VAL    переход в состояние 42
 
 
-State 74
+Состояние 74
 
    37 EXPR2: EXPR2 '+' . TERM
 
@@ -1186,7 +1186,7 @@ State 74
     VAL   переход в состояние 42
 
 
-State 75
+Состояние 75
 
    38 EXPR2: EXPR2 '-' . TERM
 
@@ -1204,7 +1204,7 @@ State 75
     VAL   переход в состояние 42
 
 
-State 76
+Состояние 76
 
    39 EXPR2: EXPR2 '%' . EXPR2
 
@@ -1223,7 +1223,7 @@ State 76
     VAL    переход в состояние 42
 
 
-State 77
+Состояние 77
 
    41 TERM: TERM '*' . VAL
 
@@ -1240,7 +1240,7 @@ State 77
     VAL  переход в состояние 109
 
 
-State 78
+Состояние 78
 
    42 TERM: TERM '/' . VAL
 
@@ -1257,21 +1257,21 @@ State 78
     VAL  переход в состояние 110
 
 
-State 79
+Состояние 79
 
    46 VAL: VAL INC .
 
     $default  вывод с использованием правила 46 (VAL)
 
 
-State 80
+Состояние 80
 
    47 VAL: VAL DEC .
 
     $default  вывод с использованием правила 47 (VAL)
 
 
-State 81
+Состояние 81
 
    13 OP: IF '(' EXPR . ')' BLOCK ELSE BLOCK
    14   | IF '(' EXPR . ')' BLOCK
@@ -1295,7 +1295,7 @@ State 81
     '<'  сдвиг, и переход в состояние 73
 
 
-State 82
+Состояние 82
 
    15 OP: WHILE '(' EXPR . ')' BLOCK
    28 EXPR: EXPR . EQ EXPR2
@@ -1318,7 +1318,7 @@ State 82
     '<'  сдвиг, и переход в состояние 73
 
 
-State 83
+Состояние 83
 
    16 OP: FOR '(' OP1 . EXPR ';' OP1 ')' BLOCK
 
@@ -1338,7 +1338,7 @@ State 83
     VAL    переход в состояние 42
 
 
-State 84
+Состояние 84
 
    55 VAL: ID '[' . EXPR2 ']'
 
@@ -1357,14 +1357,14 @@ State 84
     VAL    переход в состояние 42
 
 
-State 85
+Состояние 85
 
    17 OP: RETURN EXPR ';' .
 
     $default  вывод с использованием правила 17 (OP)
 
 
-State 86
+Состояние 86
 
    28 EXPR: EXPR . EQ EXPR2
    29     | EXPR . LE EXPR2
@@ -1388,7 +1388,7 @@ State 86
     $default  вывод с использованием правила 59 (ARG)
 
 
-State 87
+Состояние 87
 
    52 VAL: ID '(' ARGS . ')'
    58 ARGS: ARGS . ',' ARG
@@ -1397,14 +1397,14 @@ State 87
     ','  сдвиг, и переход в состояние 116
 
 
-State 88
+Состояние 88
 
    57 ARGS: ARG .
 
     $default  вывод с использованием правила 57 (ARGS)
 
 
-State 89
+Состояние 89
 
    23 OP1: ID '=' EXPR . ';'
    28 EXPR: EXPR . EQ EXPR2
@@ -1427,7 +1427,7 @@ State 89
     '<'  сдвиг, и переход в состояние 73
 
 
-State 90
+Состояние 90
 
    25 OP1: ID '[' EXPR2 . ']' '=' EXPR2 ';'
    37 EXPR2: EXPR2 . '+' TERM
@@ -1441,14 +1441,14 @@ State 90
     '%'  сдвиг, и переход в состояние 76
 
 
-State 91
+Состояние 91
 
    18 OP1: INT ID ';' .
 
     $default  вывод с использованием правила 18 (OP1)
 
 
-State 92
+Состояние 92
 
    19 OP1: INT ID '=' . EXPR ';'
 
@@ -1468,14 +1468,14 @@ State 92
     VAL    переход в состояние 42
 
 
-State 93
+Состояние 93
 
    20 OP1: PTR ID ';' .
 
     $default  вывод с использованием правила 20 (OP1)
 
 
-State 94
+Состояние 94
 
    21 OP1: PTR ID '=' . EXPR ';'
 
@@ -1495,21 +1495,21 @@ State 94
     VAL    переход в состояние 42
 
 
-State 95
+Состояние 95
 
    22 OP1: ARR ID '[' . NUM ']' ';'
 
     NUM  сдвиг, и переход в состояние 121
 
 
-State 96
+Состояние 96
 
    50 VAL: '(' EXPR ')' .
 
     $default  вывод с использованием правила 50 (VAL)
 
 
-State 97
+Состояние 97
 
    24 OP1: '*' ID '=' . EXPR ';'
 
@@ -1529,7 +1529,7 @@ State 97
     VAL    переход в состояние 42
 
 
-State 98
+Состояние 98
 
    28 EXPR: EXPR EQ EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1543,7 +1543,7 @@ State 98
     $default  вывод с использованием правила 28 (EXPR)
 
 
-State 99
+Состояние 99
 
    29 EXPR: EXPR LE EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1557,7 +1557,7 @@ State 99
     $default  вывод с использованием правила 29 (EXPR)
 
 
-State 100
+Состояние 100
 
    30 EXPR: EXPR GE EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1571,7 +1571,7 @@ State 100
     $default  вывод с использованием правила 30 (EXPR)
 
 
-State 101
+Состояние 101
 
    31 EXPR: EXPR NE EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1585,7 +1585,7 @@ State 101
     $default  вывод с использованием правила 31 (EXPR)
 
 
-State 102
+Состояние 102
 
    34 EXPR: EXPR AND EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1599,7 +1599,7 @@ State 102
     $default  вывод с использованием правила 34 (EXPR)
 
 
-State 103
+Состояние 103
 
    35 EXPR: EXPR OR EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1613,7 +1613,7 @@ State 103
     $default  вывод с использованием правила 35 (EXPR)
 
 
-State 104
+Состояние 104
 
    32 EXPR: EXPR '>' EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1627,7 +1627,7 @@ State 104
     $default  вывод с использованием правила 32 (EXPR)
 
 
-State 105
+Состояние 105
 
    33 EXPR: EXPR '<' EXPR2 .
    37 EXPR2: EXPR2 . '+' TERM
@@ -1641,7 +1641,7 @@ State 105
     $default  вывод с использованием правила 33 (EXPR)
 
 
-State 106
+Состояние 106
 
    37 EXPR2: EXPR2 '+' TERM .
    41 TERM: TERM . '*' VAL
@@ -1653,7 +1653,7 @@ State 106
     $default  вывод с использованием правила 37 (EXPR2)
 
 
-State 107
+Состояние 107
 
    38 EXPR2: EXPR2 '-' TERM .
    41 TERM: TERM . '*' VAL
@@ -1665,7 +1665,7 @@ State 107
     $default  вывод с использованием правила 38 (EXPR2)
 
 
-State 108
+Состояние 108
 
    37 EXPR2: EXPR2 . '+' TERM
    38      | EXPR2 . '-' TERM
@@ -1682,7 +1682,7 @@ State 108
     $default  вывод с использованием правила 39 (EXPR2)
 
 
-State 109
+Состояние 109
 
    41 TERM: TERM '*' VAL .
    46 VAL: VAL . INC
@@ -1694,7 +1694,7 @@ State 109
     $default  вывод с использованием правила 41 (TERM)
 
 
-State 110
+Состояние 110
 
    42 TERM: TERM '/' VAL .
    46 VAL: VAL . INC
@@ -1706,7 +1706,7 @@ State 110
     $default  вывод с использованием правила 42 (TERM)
 
 
-State 111
+Состояние 111
 
    13 OP: IF '(' EXPR ')' . BLOCK ELSE BLOCK
    14   | IF '(' EXPR ')' . BLOCK
@@ -1716,7 +1716,7 @@ State 111
     BLOCK  переход в состояние 123
 
 
-State 112
+Состояние 112
 
    15 OP: WHILE '(' EXPR ')' . BLOCK
 
@@ -1725,7 +1725,7 @@ State 112
     BLOCK  переход в состояние 124
 
 
-State 113
+Состояние 113
 
    16 OP: FOR '(' OP1 EXPR . ';' OP1 ')' BLOCK
    28 EXPR: EXPR . EQ EXPR2
@@ -1748,7 +1748,7 @@ State 113
     '<'  сдвиг, и переход в состояние 73
 
 
-State 114
+Состояние 114
 
    37 EXPR2: EXPR2 . '+' TERM
    38      | EXPR2 . '-' TERM
@@ -1761,14 +1761,14 @@ State 114
     '%'  сдвиг, и переход в состояние 76
 
 
-State 115
+Состояние 115
 
    52 VAL: ID '(' ARGS ')' .
 
     $default  вывод с использованием правила 52 (VAL)
 
 
-State 116
+Состояние 116
 
    58 ARGS: ARGS ',' . ARG
 
@@ -1789,14 +1789,14 @@ State 116
     ARG    переход в состояние 127
 
 
-State 117
+Состояние 117
 
    23 OP1: ID '=' EXPR ';' .
 
     $default  вывод с использованием правила 23 (OP1)
 
 
-State 118
+Состояние 118
 
    25 OP1: ID '[' EXPR2 ']' . '=' EXPR2 ';'
    55 VAL: ID '[' EXPR2 ']' .
@@ -1806,7 +1806,7 @@ State 118
     $default  вывод с использованием правила 55 (VAL)
 
 
-State 119
+Состояние 119
 
    19 OP1: INT ID '=' EXPR . ';'
    28 EXPR: EXPR . EQ EXPR2
@@ -1829,7 +1829,7 @@ State 119
     '<'  сдвиг, и переход в состояние 73
 
 
-State 120
+Состояние 120
 
    21 OP1: PTR ID '=' EXPR . ';'
    28 EXPR: EXPR . EQ EXPR2
@@ -1852,14 +1852,14 @@ State 120
     '<'  сдвиг, и переход в состояние 73
 
 
-State 121
+Состояние 121
 
    22 OP1: ARR ID '[' NUM . ']' ';'
 
     ']'  сдвиг, и переход в состояние 131
 
 
-State 122
+Состояние 122
 
    24 OP1: '*' ID '=' EXPR . ';'
    28 EXPR: EXPR . EQ EXPR2
@@ -1882,7 +1882,7 @@ State 122
     '<'  сдвиг, и переход в состояние 73
 
 
-State 123
+Состояние 123
 
    13 OP: IF '(' EXPR ')' BLOCK . ELSE BLOCK
    14   | IF '(' EXPR ')' BLOCK .
@@ -1892,14 +1892,14 @@ State 123
     $default  вывод с использованием правила 14 (OP)
 
 
-State 124
+Состояние 124
 
    15 OP: WHILE '(' EXPR ')' BLOCK .
 
     $default  вывод с использованием правила 15 (OP)
 
 
-State 125
+Состояние 125
 
    16 OP: FOR '(' OP1 EXPR ';' . OP1 ')' BLOCK
 
@@ -1923,21 +1923,21 @@ State 125
     VAL    переход в состояние 42
 
 
-State 126
+Состояние 126
 
    55 VAL: ID '[' EXPR2 ']' .
 
     $default  вывод с использованием правила 55 (VAL)
 
 
-State 127
+Состояние 127
 
    58 ARGS: ARGS ',' ARG .
 
     $default  вывод с использованием правила 58 (ARGS)
 
 
-State 128
+Состояние 128
 
    25 OP1: ID '[' EXPR2 ']' '=' . EXPR2 ';'
 
@@ -1956,35 +1956,35 @@ State 128
     VAL    переход в состояние 42
 
 
-State 129
+Состояние 129
 
    19 OP1: INT ID '=' EXPR ';' .
 
     $default  вывод с использованием правила 19 (OP1)
 
 
-State 130
+Состояние 130
 
    21 OP1: PTR ID '=' EXPR ';' .
 
     $default  вывод с использованием правила 21 (OP1)
 
 
-State 131
+Состояние 131
 
    22 OP1: ARR ID '[' NUM ']' . ';'
 
     ';'  сдвиг, и переход в состояние 136
 
 
-State 132
+Состояние 132
 
    24 OP1: '*' ID '=' EXPR ';' .
 
     $default  вывод с использованием правила 24 (OP1)
 
 
-State 133
+Состояние 133
 
    13 OP: IF '(' EXPR ')' BLOCK ELSE . BLOCK
 
@@ -1993,14 +1993,14 @@ State 133
     BLOCK  переход в состояние 137
 
 
-State 134
+Состояние 134
 
    16 OP: FOR '(' OP1 EXPR ';' OP1 . ')' BLOCK
 
     ')'  сдвиг, и переход в состояние 138
 
 
-State 135
+Состояние 135
 
    25 OP1: ID '[' EXPR2 ']' '=' EXPR2 . ';'
    37 EXPR2: EXPR2 . '+' TERM
@@ -2013,21 +2013,21 @@ State 135
     '%'  сдвиг, и переход в состояние 76
 
 
-State 136
+Состояние 136
 
    22 OP1: ARR ID '[' NUM ']' ';' .
 
     $default  вывод с использованием правила 22 (OP1)
 
 
-State 137
+Состояние 137
 
    13 OP: IF '(' EXPR ')' BLOCK ELSE BLOCK .
 
     $default  вывод с использованием правила 13 (OP)
 
 
-State 138
+Состояние 138
 
    16 OP: FOR '(' OP1 EXPR ';' OP1 ')' . BLOCK
 
@@ -2036,14 +2036,14 @@ State 138
     BLOCK  переход в состояние 140
 
 
-State 139
+Состояние 139
 
    25 OP1: ID '[' EXPR2 ']' '=' EXPR2 ';' .
 
     $default  вывод с использованием правила 25 (OP1)
 
 
-State 140
+Состояние 140
 
    16 OP: FOR '(' OP1 EXPR ';' OP1 ')' BLOCK .
 
