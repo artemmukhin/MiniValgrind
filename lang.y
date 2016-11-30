@@ -40,9 +40,13 @@ FUNCS:  FUNC                            { $$.clear(); $$.push_back($1); }
 ;
 
 FUNC:   INT ID '(' PARAMS ')' BLOCK     { $$ = new Function($2, T_INT, $4, $6); }
+|       PTR ID '(' PARAMS ')' BLOCK     { $$ = new Function($2, T_PTR, $4, $6); }
+|       ARR ID '(' PARAMS ')' BLOCK     { $$ = new Function($2, T_ARR, $4, $6); }
 ;
 
 PARAM:  INT ID                          { $$ = new Parameter(T_INT, $2); }
+|       PTR ID                          { $$ = new Parameter(T_PTR, $2); }
+|       ARR ID                          { $$ = new Parameter(T_ARR, $2); }
 ;
 
 PARAMS:                                 { $$.clear(); }

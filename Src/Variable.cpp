@@ -261,9 +261,20 @@ std::ostream & operator<<(std::ostream & os, const Var & v) {
             break;
         case T_ARR:
             os << "[";
-            for (size_t i = 0; i < v.arrSize - 1; i++)
-                os << v.arrVal[i] << ", ";
-            os << v.arrVal[v.arrSize - 1] << "]";
+            for (size_t i = 0; i < ((v.arrSize > 0) ? v.arrSize - 1 : 0); i++) {
+                if (v.isArrInit[i])
+                    os << v.arrVal[i] << ", ";
+                else
+                    os << "None" << ", ";
+            }
+            if (v.arrSize > 0) {
+                if (v.isArrInit[v.arrSize - 1])
+                    os << v.arrVal[v.arrSize - 1] << "]";
+                else
+                    os << "None" << "]";
+            }
+            else
+                os << "]";
             break;
     }
     return os;

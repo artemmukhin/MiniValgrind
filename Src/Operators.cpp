@@ -1,4 +1,5 @@
 #include "Operators.h"
+
 // print table of variables after run each operator in program
 #define PRINT_VAR_TABLE false
 
@@ -497,8 +498,12 @@ Var BinaryExpression::eval(Block* parentBlock) {
         result = Var((arg1->eval(parentBlock).getIntVal() > arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
     else if (*op == '<')
         result = Var((arg1->eval(parentBlock).getIntVal() < arg2->eval(parentBlock).getIntVal()) ? 1 : 0);
-    else if (strcmp(op, "&&") == 0)
-        result = Var((arg1->eval(parentBlock).getIntVal() * arg2->eval(parentBlock).getIntVal() != 0) ? 1 : 0);
+    else if (strcmp(op, "&&") == 0) {
+        if (arg1->eval(parentBlock).getIntVal() == 0)
+            result = Var(0);
+        else
+            result = Var((arg1->eval(parentBlock).getIntVal() * arg2->eval(parentBlock).getIntVal() != 0) ? 1 : 0);
+    }
     else if (strcmp(op, "||") == 0)
         result = Var((arg1->eval(parentBlock).getIntVal() + arg2->eval(parentBlock).getIntVal() != 0) ? 1 : 0);
 

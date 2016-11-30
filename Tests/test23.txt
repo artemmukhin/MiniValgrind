@@ -1,0 +1,29 @@
+#begin
+
+// Insertion sort
+
+arr insertSort(arr a, int length) {
+    int value;
+    int j;
+
+    for(int i = 1; i < length; i++;) {
+        value = a[i];
+        for (j = i - 1; (j >= 0) && (a[j] > value); j--;) {
+            a[j + 1] = a[j];
+        }
+        a[j + 1] = value;
+    }
+    return a;
+}
+
+int main() {
+    arr A[8];
+    A[0] = 22; A[1] = 5; A[2] = 6;
+    A[3] = 3; A[4] = 10; A[5] = 7;
+    A[6] = 15; A[7] = 1;
+    arr sorted[8];
+    sorted = insertSort(A, 8);
+    print(sorted);
+    return 0;
+}
+#end
