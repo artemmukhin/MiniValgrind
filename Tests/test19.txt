@@ -1,9 +1,10 @@
 #begin
 int factorial(int n) {
-    if (n == 1) {
-        return 1;
+    int res = 1;
+    for (int mul = 2; mul <= n; mul++;) {
+        res = res * mul;
     }
-    return n * factorial(n - 1);
+    return res;
 }
 
 int main() {

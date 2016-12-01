@@ -87,7 +87,7 @@ OP1:    INT ID ';'                          { $$ = new DefOperator(T_INT, $2, nu
 |       INT ID '=' EXPR ';'                 { $$ = new DefOperator(T_INT, $2, $4); }
 |       PTR ID ';'                          { $$ = new DefOperator(T_PTR, $2, nullptr); }
 |       PTR ID '=' EXPR ';'                 { $$ = new DefOperator(T_PTR, $2, $4); }
-|       ARR ID '[' NUM ']' ';'                  { $$ = new DefOperator(T_ARR, $2, $4, nullptr); }
+|       ARR ID '[' NUM ']' ';'              { $$ = new DefOperator(T_ARR, $2, $4, nullptr); }
 |       ID '=' EXPR ';'                     { $$ = new AssignOperator($1, $3); }
 |       '*' ID '=' EXPR ';'                 { $$ = new AssignOperator($2, $4, true); }
 |       ID '[' EXPR2 ']' '=' EXPR2 ';'      { $$ = new AssignOperator($1, $6, $3); }

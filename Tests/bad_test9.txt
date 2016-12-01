@@ -1,0 +1,23 @@
+#begin
+
+ptr bad_max(ptr p, ptr q) {
+    int x = *p - *q;
+    if (x > 0) {
+        return p;
+    }
+    else {
+        return &x; // misprint, should be "return q"
+    }
+}
+
+int main() {
+    int x = 2;
+    int y = 5;
+    ptr p1 = &x;
+    ptr p2 = &y;
+    ptr p3 = bad_max(p1, p2);
+    int a = *p3;
+    print(a);
+}
+
+#end

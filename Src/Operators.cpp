@@ -3,6 +3,24 @@
 // print table of variables after run each operator in program
 #define PRINT_VAR_TABLE false
 
+std::string VTypeToString(VType t) {
+    switch (t) {
+        case T_INT:
+            return "int";
+        case T_PTR:
+            return "ptr";
+        case T_ARR:
+            return "arr";
+    }
+}
+
+bool VTypeIsCompatible(VType t1, VType t2) {
+    if (t1 == t2)
+        return true;
+    else if ((t1 == T_PTR && t2 == T_ARR) || (t1 == T_ARR && t2 == T_PTR))
+        return true;
+    return false;
+}
 
 std::string indentation(unsigned indent) {
     std::string res = "";
@@ -41,9 +59,11 @@ void Block::run(Block* parentBlock) {
             (*i)->run(this);
         }
         catch (const std::exception & ex) {
-            std::cout << "!!! ERROR !!!  " << ex.what() << std::endl;
-            std::string skipLine;
-            std::getline(std::cin, skipLine);
+            std::cout << "Error:    " << ex.what() << std::endl;
+            //std::string skipLine;
+            //std::getline(std::cin, skipLine);
+            std::cout << "Aborted." << std::endl;
+            exit(1);
         }
         if (PRINT_VAR_TABLE) {
             printVarTable();
@@ -72,7 +92,7 @@ void Block::addVar(const std::string& id, Var* newVar) {
     }
     else {
         delete newVar;
-        throw UndefinedVarException("VarExpression with the same ID already exists");
+        throw UndefinedVarException("Variable " + id + "is already exists");
     }
 }
 void Block::printVarTable() const {
@@ -83,17 +103,7 @@ void Block::printVarTable() const {
     else
         std::cout << "**** Variables ****" << std::endl;
     for (std::map<std::string, Var*>::const_iterator i = vars.begin(); i != vars.end(); i++) {
-        switch ((*i).second->getType()) {
-            case T_INT:
-                std::cout << "int ";
-                break;
-            case T_PTR:
-                std::cout << "ptr ";
-                break;
-            case T_ARR:
-                std::cout << "arr ";
-                break;
-        }
+        std::cout << VTypeToString((*i).second->getType()) << " ";
         std::cout << (*i).first << " = " << *((*i).second) << std::endl;
     }
 
@@ -110,8 +120,13 @@ void Block::clearVarTable() {
 }
 void Block::changeReturnValue(Var resultVal) {
     Var* blockResult = findVar("#RESULT");
-    if (blockResult != nullptr)
-        *blockResult = resultVal;
+    if (blockResult != nullptr) {
+        if (VTypeIsCompatible(blockResult->getType(), resultVal.getType()))
+            *blockResult = resultVal;
+        else
+            throw InvalidTypeException("Returned variable must be " + VTypeToString(blockResult->getType()) +
+                                        ", not " + VTypeToString(resultVal.getType()));
+    }
     else
         throw UndefinedVarException("Block has no #RESULT for return");
 }
@@ -261,7 +276,7 @@ void AssignOperator::run(Block* parentBlock) {
         targetVar = parentBlock->findVar(ID);
 
     if (targetVar == nullptr)
-        throw UndefinedVarException(); // variable with given id doesn't exist
+        throw UndefinedVarException("Variable " + ID + " doesn't exist");
     else if (targetVar->getType() == T_INT && index != nullptr)
         throw InvalidTypeException("Int has no index");
 
@@ -366,16 +381,11 @@ Var FunctionCall::eval(Block* parentBlock) {
         parentBlock->printVarTable();
     }
     else {
-        try {
-            Program& p = Program::Instance();
-            std::vector<Var> argsVar;
-            for (auto arg : args)
-                argsVar.push_back(arg->eval(parentBlock));
-            resVar = p.runFunction(ID, argsVar);
-        }
-        catch (UndefinedFunctionException) {
-            std::cout << "UndefinedFunctionException!!!" << std::endl;
-        }
+        Program& p = Program::Instance();
+        std::vector<Var> argsVar;
+        for (auto arg : args)
+            argsVar.push_back(arg->eval(parentBlock));
+        resVar = p.runFunction(ID, argsVar);
     }
     return resVar;
 }
@@ -518,7 +528,7 @@ ArrayAtExpression::~ArrayAtExpression() { delete index; }
 Var ArrayAtExpression::eval(Block* parentBlock) {
     Var* sourceArr = parentBlock->findVar(ID);
     if (sourceArr == nullptr)
-        throw UndefinedVarException();
+        throw UndefinedVarException("Array " + ID + " doesn't exist");
     else if (sourceArr->getType() == T_INT && index != nullptr) {
         throw InvalidTypeException("Int has no index");
     }
@@ -548,7 +558,7 @@ std::string VarExpression::getID() { return ID; }
 Var VarExpression::eval(Block* parentBlock) {
     Var* thisVar = parentBlock->findVar(ID);
     if (thisVar == nullptr)
-        throw UndefinedVarException();
+        throw UndefinedVarException(ID);
     return *thisVar;
 }
 
@@ -584,16 +594,18 @@ Function::~Function() {
 Var Function::eval(const std::vector<Var>& args, Block* globalBlock) {
     body->clearVarTable();
     if (args.size() != params.size())
-        throw InvalidFunctionCall();
+        throw InvalidFunctionCall("too many (few) arguments");
     body->addVar("#RESULT", new Var(returnType));
     for (size_t i = 0; i < params.size(); i++) {
         if (args[i].getType() == params[i]->getParamType())
             body->addVar(params[i]->getId(), new Var(args[i]));
         else
-            throw InvalidFunctionCall();
+            throw InvalidFunctionCall("invalid parameter's type (" + VTypeToString(args[i].getType()) +
+                                      "instead of " + VTypeToString(params[i]->getParamType()) + ")");
     }
     body->run(globalBlock);
     Var res = *(body->findVar("#RESULT"));
+    body->clearVarTable();
     return res;
 }
 const std::string &Function::getId() const {
@@ -621,6 +633,6 @@ Var Program::runFunction(std::string id, std::vector<Var>& args) {
         if (func->getId() == id)
             return func->eval(args, globalBlock);
     }
-    throw UndefinedFunctionException();
+    throw UndefinedFunctionException(id);
 }
 

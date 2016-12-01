@@ -1,0 +1,20 @@
+#begin
+
+arr fillArr(int size, int num) {
+    ptr p = malloc(size);
+    for (int i = 0; i < size; i++;) {
+        p[i] = num;
+    }
+    return p;
+}
+
+int main() {
+    int s = 5;
+    int n = 3;
+    arr a[5];
+    a = fillArr(s, n);
+    print(a); // "[3, 3, 3, 3, 3]"
+    return 0;
+}
+
+#end

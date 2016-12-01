@@ -1,0 +1,22 @@
+#begin
+
+ptr bad_max(ptr p, ptr q) {
+    if (*p > *q) {
+        return p;
+    }
+    else {
+        return *q; // misprint, should be "return q"
+    }
+}
+
+int main() {
+    int x = 2;
+    int y = 5;
+    ptr p1 = &x;
+    ptr p2 = &y;
+    ptr p3 = bad_max(p1, p2);
+    int a = *p3;
+    print(a);
+}
+
+#end
