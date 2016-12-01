@@ -62,9 +62,10 @@ extern int yydebug;
     DEC = 272,
     NUM = 273,
     ID = 274,
-    INT = 275,
-    PTR = 276,
-    ARR = 277
+    GLOBAL = 275,
+    INT = 276,
+    PTR = 277,
+    ARR = 278
   };
 #endif
 

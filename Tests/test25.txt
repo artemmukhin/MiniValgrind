@@ -1,0 +1,18 @@
+#begin
+
+// Global vars
+
+global {
+    int global_int = 10;
+    arr global_arr[2];
+    global_arr[0] = 5; global_arr[1] = 7;
+}
+
+int main() {
+    global_int++;
+    global_arr[1] = global_arr[0] + global_arr[1];
+    int x = global_int * 10 + global_arr[1];
+    print(x); // "122"
+    return 0;
+}
+#end

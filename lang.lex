@@ -35,6 +35,7 @@ arr                             return ARR;
 \-\-                            return DEC;
 #begin                          return P_BEGIN;
 #end                            return P_END;
+global                          return GLOBAL;
 
 [0-9]+                          {
                                     yylval.str = yytext;

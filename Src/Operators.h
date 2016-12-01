@@ -32,7 +32,9 @@ private:
     std::map<std::string, Var*> vars; // table of variables
     Block* parentBlock;
 public:
+    Block();
     Block(std::list<Operator*> newOps);
+    Block(const Block &block);
     ~Block();
     size_t size();
     void print(unsigned indent = 0);
@@ -43,6 +45,7 @@ public:
     void clearVarTable();
     void changeReturnValue(Var resultVal);
     bool isReturned(); // true, if #RESULT is already init
+    std::map<std::string, Var*> getVars();
 };
 
 class ExprOperator : public Operator {
@@ -198,6 +201,15 @@ public:
 };
 
 
+class Globals {
+public:
+    Globals();
+    Globals(Block *globalsBlock);
+    void addToBlock(Block* block);
+private:
+    Block* globalsBlock;
+};
+
 // parameters of a function
 class Parameter {
 public:
@@ -217,17 +229,19 @@ private:
     VType returnType;
     std::vector<Parameter*> params;
     Block* body;
+    //std::stack<Function*> functionCalls;
 public:
     Function(const std::string &id, VType returnType, const std::vector<Parameter *> &params, Block *body);
     virtual ~Function();
     const std::string &getId() const;
-    Var eval(const std::vector<Var>& args);
+    Var eval(const std::vector<Var>& args, Block* globalBlock);
 };
 
 // Singleton pattern
 class Program {
 private:
     std::list<Function*> funcs;
+    Block* globalBlock;
     Program() {}
     ~Program() {}
     Program(Program const&) = delete;
@@ -238,10 +252,11 @@ public:
         return p;
     }
     void setFuncs(std::list<Function*> f);
+    void setGlobals(Globals* globs);
     //std::list<Function*> getFuncs();
-    void deleteFuncs();
+    void finalize();
     void run();
-    Var runFunction(std::string& id, std::vector<Var>& args);
+    Var runFunction(std::string id, std::vector<Var>& args);
 };
 
 
@@ -257,4 +272,5 @@ typedef struct {
     Program* prog;
     Parameter* param;
     std::vector<Parameter*> params;
+    Globals* globs;
 } MyDataType;

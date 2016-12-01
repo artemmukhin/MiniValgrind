@@ -12,6 +12,7 @@ std::string indentation(unsigned indent) {
 }
 
 // Block Operator
+Block::Block() {}
 Block::Block(std::list<Operator*> newOps) {
     ops = newOps;
 }
@@ -39,7 +40,7 @@ void Block::run(Block* parentBlock) {
             (*i)->run(this);
         }
         catch (const std::exception & ex) {
-            std::cerr << "!!! ERROR !!!  " << ex.what() << std::endl;
+            std::cout << "!!! ERROR !!!  " << ex.what() << std::endl;
             std::string skipLine;
             std::getline(std::cin, skipLine);
         }
@@ -116,14 +117,16 @@ void Block::changeReturnValue(Var resultVal) {
 }
 bool Block::isReturned() {
     Var* blockResult = findVar("#RESULT");
-    if (blockResult != nullptr) {
-        if (blockResult->isVarInit())
-            return true;
-        else
-            return false;
-    }
-    else
-        throw UndefinedVarException("Block has no #RESULT for return");
+    if (blockResult != nullptr)
+        return blockResult->isVarInit();
+    return false;
+}
+std::map<std::string, Var*> Block::getVars() {
+    return vars;
+}
+Block::Block(const Block &block) {
+    ops = block.ops;
+    parentBlock = block.parentBlock;
 }
 
 
@@ -551,6 +554,15 @@ Var VarExpression::eval(Block* parentBlock) {
     return *thisVar;
 }
 
+Globals::Globals() {}
+Globals::Globals(Block *globalsBlock) : globalsBlock(globalsBlock) {}
+void Globals::addToBlock(Block *block) {
+    globalsBlock->run(nullptr);
+    auto globalVars = globalsBlock->getVars();
+    for (auto var : globalVars) {
+        block->addVar(var.first, var.second);
+    }
+}
 
 Parameter::Parameter(VType paramType, const std::string &id) : paramType(paramType), id(id) {}
 Parameter::~Parameter() {}
@@ -562,7 +574,9 @@ const std::string &Parameter::getId() const {
 }
 
 Function::Function(const std::string &id, VType returnType, const std::vector<Parameter *> &params, Block *body) :
-        id(id), returnType(returnType), params(params), body(body) {}
+        id(id), returnType(returnType), params(params), body(body) {
+    //functionCalls = std::stack<Function*>();
+}
 Function::~Function() {
     for (auto param : params) {
         delete param;
@@ -570,7 +584,7 @@ Function::~Function() {
     params.clear();
     delete body;
 }
-Var Function::eval(const std::vector<Var>& args) {
+Var Function::eval(const std::vector<Var>& args, Block* globalBlock) {
     body->clearVarTable();
     if (args.size() != params.size())
         throw InvalidFunctionCall();
@@ -581,7 +595,7 @@ Var Function::eval(const std::vector<Var>& args) {
         else
             throw InvalidFunctionCall();
     }
-    body->run(nullptr);
+    body->run(globalBlock);
     return *(body->findVar("#RESULT"));
 }
 const std::string &Function::getId() const {
@@ -589,24 +603,26 @@ const std::string &Function::getId() const {
 }
 
 void Program::run() {
-    for (auto func : funcs) {
-        if (func->getId() == "main") {
-            func->eval(std::vector<Var>());
-            break;
-        }
-    }
+    auto defaultArgs = std::vector<Var>();
+    runFunction("main", defaultArgs);
 }
 void Program::setFuncs(std::list<Function *> f) {
     funcs = f;
 }
-void Program::deleteFuncs() {
+void Program::setGlobals(Globals* globs) {
+    globalBlock = new Block();
+    globs->addToBlock(globalBlock);
+}
+void Program::finalize() {
     for (auto func : funcs)
         delete func;
+    delete globalBlock;
 }
-Var Program::runFunction(std::string &id, std::vector<Var>& args) {
+Var Program::runFunction(std::string id, std::vector<Var>& args) {
     for (auto func : funcs) {
         if (func->getId() == id)
-            return func->eval(args);
+            return func->eval(args, globalBlock);
     }
     throw UndefinedFunctionException();
 }
+

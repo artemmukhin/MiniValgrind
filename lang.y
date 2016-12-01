@@ -15,7 +15,7 @@
 
 %token IF ELSE WHILE FOR RETURN P_BEGIN P_END
 %token EQ LE GE NE AND OR INC DEC
-%token NUM ID
+%token NUM ID GLOBAL
 %token INT PTR ARR
 
 %type<str> ID NUM
@@ -29,11 +29,26 @@
 %type<prog> PROGRAM
 %type<param> PARAM
 %type<params> PARAMS
+%type<globs> GLOBALS
 
 %%
 
-PROGRAM: P_BEGIN FUNCS P_END            { Program& p = Program::Instance(); p.setFuncs($2); p.run(); p.deleteFuncs(); }
+PROGRAM: P_BEGIN GLOBALS FUNCS P_END     {
+                                            Program& p = Program::Instance();
+                                            p.setGlobals($2);
+                                            p.setFuncs($3);
+                                            p.run();
+                                            p.finalize();
+                                          }
+|       P_BEGIN FUNCS P_END               {
+                                            Program& p = Program::Instance();
+                                            p.setFuncs($2);
+                                            p.run();
+                                            p.finalize();
+                                          }
 ;
+
+GLOBALS: GLOBAL BLOCK                   { $$ = new Globals($2); }
 
 FUNCS:  FUNC                            { $$.clear(); $$.push_back($1); }
 |       FUNCS FUNC                      { $$ = $1; $$.push_back($2); }
@@ -54,6 +69,7 @@ PARAMS:                                 { $$.clear(); }
 |       PARAMS ',' PARAM                { $$ = $1; $$.push_back($3); }
 
 BLOCK:  '{' OPS '}'                     { $$ = new Block($2); }
+|       '{'     '}'                     { $$ = new Block(); }
 
 OPS:    OP                              { $$.clear(); $$.push_back($1); }
 |       OPS OP                          { $$ = $1; $$.push_back($2); }

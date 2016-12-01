@@ -1,0 +1,59 @@
+#begin
+
+// Merge sort
+// Not working now
+
+global {
+    arr A[8];
+    A[0] = 22; A[1] = 5; A[2] = 6;
+    A[3] = 3; A[4] = 10; A[5] = 7;
+    A[6] = 15; A[7] = 1;
+    arr B[8];
+}
+
+int merging(int low, int mid, int high) {
+   int l1 = low;
+   int l2 = mid + 1;
+   int i;
+   for (i = low; (l1 <= mid) && (l2 <= high); i++;) {
+      if (A[l1] <= A[l2]) {
+         B[i] = A[l1++];
+      }
+      else {
+         B[i] = A[l2++];
+      }
+   }
+
+   while (l1 <= mid) {
+      B[i++] = A[l1++];
+   }
+
+   while (l2 <= high) {
+      B[i++] = A[l2++];
+   }
+
+   for (i = low; i <= high; i++;) {
+      A[i] = B[i];
+   }
+}
+
+int sort(int low, int high) {
+   int mid;
+   if (low < high) {
+      mid = (low + high) / 2;
+      sort(low, mid);
+      sort(mid + 1, high);
+      merging(low, mid, high);
+   }
+}
+
+int main() {
+    print(A);
+    print(B);
+    sort(0, 8);
+    print(A);
+    print(B);
+    return 0;
+}
+
+#end
