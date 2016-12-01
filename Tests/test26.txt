@@ -1,7 +1,7 @@
 #begin
 
 // Merge sort
-// Not working now
+// recursive merge sort doesn't work because MiniValgrind doesn't support call stack
 
 global {
     arr A[8];
@@ -9,6 +9,13 @@ global {
     A[3] = 3; A[4] = 10; A[5] = 7;
     A[6] = 15; A[7] = 1;
     arr B[8];
+}
+
+int min(int x, int y) {
+    if (x > y) {
+        return y;
+    }
+    return x;
 }
 
 int merging(int low, int mid, int high) {
@@ -37,22 +44,23 @@ int merging(int low, int mid, int high) {
    }
 }
 
-int sort(int low, int high) {
-   int mid;
-   if (low < high) {
-      mid = (low + high) / 2;
-      sort(low, mid);
-      sort(mid + 1, high);
-      merging(low, mid, high);
+int mergeSort(int n) {
+   int curr_size;
+   int left_start;
+   for (curr_size = 1; curr_size <= n-1; curr_size = 2 * curr_size;) {
+       for (left_start = 0; left_start < n-1; left_start = left_start + 2 * curr_size;) {
+           int mid = left_start + curr_size - 1;
+           int right_end = min(left_start + 2*curr_size - 1, n-1);
+           merging(left_start, mid, right_end);
+       }
    }
 }
 
+
 int main() {
+    int size = 8;
+    mergeSort(size);
     print(A);
-    print(B);
-    sort(0, 8);
-    print(A);
-    print(B);
     return 0;
 }
 

@@ -229,9 +229,8 @@ private:
     VType returnType;
     std::vector<Parameter*> params;
     Block* body;
-    //std::stack<Function*> functionCalls;
 public:
-    Function(const std::string &id, VType returnType, const std::vector<Parameter *> &params, Block *body);
+    Function(const std::string &id, VType returnType, const std::vector<Parameter*> params, Block *body);
     virtual ~Function();
     const std::string &getId() const;
     Var eval(const std::vector<Var>& args, Block* globalBlock);

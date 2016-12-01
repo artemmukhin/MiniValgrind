@@ -12,9 +12,10 @@ std::string indentation(unsigned indent) {
 }
 
 // Block Operator
-Block::Block() {}
+Block::Block() { parentBlock = nullptr; }
 Block::Block(std::list<Operator*> newOps) {
     ops = newOps;
+    parentBlock = nullptr;
 }
 size_t Block::size() {
     return ops.size();
@@ -70,8 +71,8 @@ void Block::addVar(const std::string& id, Var* newVar) {
         vars.insert(std::pair<std::string, Var*>(id, newVar));
     }
     else {
-        throw UndefinedVarException("VarExpression with the same ID already exists");
         delete newVar;
+        throw UndefinedVarException("VarExpression with the same ID already exists");
     }
 }
 void Block::printVarTable() const {
@@ -108,7 +109,6 @@ void Block::clearVarTable() {
     vars.clear();
 }
 void Block::changeReturnValue(Var resultVal) {
-    // to do: stop running parentBlock !!!
     Var* blockResult = findVar("#RESULT");
     if (blockResult != nullptr)
         *blockResult = resultVal;
@@ -266,8 +266,8 @@ void AssignOperator::run(Block* parentBlock) {
         throw InvalidTypeException("Int has no index");
 
     Var valueVar = value->eval(parentBlock);
-    size_t assignIndex;
-    if (index != nullptr)
+    size_t assignIndex = 0;
+    if (index)
         assignIndex = (size_t) index->eval(parentBlock).getIntVal();
 
     switch (targetVar->getType()) {
@@ -308,7 +308,6 @@ DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size
 }
 DefOperator::~DefOperator() { delete assignOp; }
 void DefOperator::print(unsigned indent) {
-    //std::cout << "print def\n";
     std::cout << indentation(indent);
     if (type == T_INT)
         std::cout << "int " << ID;
@@ -330,7 +329,6 @@ void DefOperator::run(Block* parentBlock) {
         parentBlock->addVar(ID, newVar);
         if (value != nullptr) {
             assignOp->run(parentBlock);
-            // возможно, здесь удаляется Exspression* (в ~AssignOperator()), который должен использоваться потом
         }
     }
 }
@@ -573,17 +571,16 @@ const std::string &Parameter::getId() const {
     return id;
 }
 
-Function::Function(const std::string &id, VType returnType, const std::vector<Parameter *> &params, Block *body) :
-        id(id), returnType(returnType), params(params), body(body) {
-    //functionCalls = std::stack<Function*>();
-}
+Function::Function(const std::string &id, VType returnType, const std::vector<Parameter*> params, Block *body) :
+        id(id), returnType(returnType), params(params), body(body) {}
 Function::~Function() {
-    for (auto param : params) {
+    for (auto param : params)
         delete param;
-    }
     params.clear();
     delete body;
 }
+// MiniValgrind doesn't support call stack, so if you call function inside it,
+// the first call will lost
 Var Function::eval(const std::vector<Var>& args, Block* globalBlock) {
     body->clearVarTable();
     if (args.size() != params.size())
@@ -596,7 +593,8 @@ Var Function::eval(const std::vector<Var>& args, Block* globalBlock) {
             throw InvalidFunctionCall();
     }
     body->run(globalBlock);
-    return *(body->findVar("#RESULT"));
+    Var res = *(body->findVar("#RESULT"));
+    return res;
 }
 const std::string &Function::getId() const {
     return id;

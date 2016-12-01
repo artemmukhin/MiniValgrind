@@ -1359,23 +1359,23 @@ yyreduce:
         case 2:
 #line 36 "lang.y" /* yacc.c:1646  */
     {
-                                            Program& p = Program::Instance();
-                                            p.setGlobals((yyvsp[-2].globs));
-                                            p.setFuncs((yyvsp[-1].funcs));
-                                            p.run();
-                                            p.finalize();
-                                          }
+                                                Program& p = Program::Instance();
+                                                p.setGlobals((yyvsp[-2].globs));
+                                                p.setFuncs((yyvsp[-1].funcs));
+                                                p.run();
+                                                p.finalize();
+                                            }
 #line 1369 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 3:
 #line 43 "lang.y" /* yacc.c:1646  */
     {
-                                            Program& p = Program::Instance();
-                                            p.setFuncs((yyvsp[-1].funcs));
-                                            p.run();
-                                            p.finalize();
-                                          }
+                                                Program& p = Program::Instance();
+                                                p.setFuncs((yyvsp[-1].funcs));
+                                                p.run();
+                                                p.finalize();
+                                            }
 #line 1380 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 

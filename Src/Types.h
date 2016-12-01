@@ -7,8 +7,6 @@
 #include <string>
 #include <cstring>
 #include <vector>
-#include <stack>
-#include <memory>
 
 enum VType { T_INT, T_PTR, T_ARR };
 enum EType { E_UNARY, E_BIN, E_VAL, E_VAR, E_FUNC, E_ARRAT }; // expression type
