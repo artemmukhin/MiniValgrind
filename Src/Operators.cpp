@@ -285,6 +285,10 @@ void AssignOperator::run(Block* parentBlock) {
     if (index)
         assignIndex = (size_t) index->eval(parentBlock).getIntVal();
 
+    FunctionCall* valueAsFunCall = dynamic_cast<FunctionCall*>(value);
+    bool isMalloc = (valueAsFunCall && valueAsFunCall->getID() == "malloc");
+    Program &p = Program::Instance();
+
     switch (targetVar->getType()) {
         case T_INT:
             targetVar->setIntVal(valueVar.getIntVal());
@@ -293,17 +297,22 @@ void AssignOperator::run(Block* parentBlock) {
             if (index)
                 targetVar->setArrAtVal(valueVar.getIntVal(), assignIndex);
             else {
-                if (valueVar.getType() == T_PTR)
+                if (valueVar.getType() == T_PTR) {
                     targetVar->setPtrVal(valueVar.getPtrVal());
-                else if (valueVar.getType() == T_ARR)
-                    targetVar->setArrVal(valueVar.getArr(), valueVar.getArrSize(), valueVar.getArrInit());
+                    targetVar->setArrVal(valueVar.getArr(), valueVar.getArrInit());
+                }
+                else if (valueVar.getType() == T_ARR) {
+                    targetVar->setArrVal(valueVar.getArr(), valueVar.getArrInit());
+                    if (isMalloc) // add pointer to allocated memory to program storage
+                        p.addAllocated(targetVar->getArr().get());
+                }
             }
             break;
         case T_ARR:
             if (index)
                 targetVar->setArrAtVal(valueVar.getIntVal(), assignIndex);
             else
-                targetVar->setArrVal(valueVar.getArr(), valueVar.getArrSize(), valueVar.getArrInit());
+                targetVar->setArrVal(valueVar.getArr(), valueVar.getArrInit());
             break;
     }
 }
@@ -368,9 +377,21 @@ FunctionCall::~FunctionCall() {
 }
 Var FunctionCall::eval(Block* parentBlock) {
     Var resVar;
+    Program& p = Program::Instance();
     if (ID == "malloc" && args.size() == 1) {
         size_t sizemem = (size_t) (args.front())->eval(parentBlock).getIntVal();
-        resVar = Var(new int[sizemem], sizemem);
+        resVar = Var(T_ARR, sizemem);
+    }
+    else if (ID == "free" && args.size() == 1) {
+        VarExpression* varExpr = dynamic_cast<VarExpression*>(args.front());
+        if (!varExpr)
+            throw InvalidTypeException("Argument of free function must be variable");
+        Var* var = parentBlock->findVar(varExpr->getID());
+        if (!var)
+            throw UndefinedVarException();
+        auto freeMemory = var->getArr().get();
+        p.removeAllocated(freeMemory);
+        var->freeArr();
     }
     else if (ID == "print" && args.size() == 1) {
         if (PRINT_VAR_TABLE)
@@ -381,7 +402,6 @@ Var FunctionCall::eval(Block* parentBlock) {
         parentBlock->printVarTable();
     }
     else {
-        Program& p = Program::Instance();
         std::vector<Var> argsVar;
         for (auto arg : args)
             argsVar.push_back(arg->eval(parentBlock));
@@ -389,6 +409,7 @@ Var FunctionCall::eval(Block* parentBlock) {
     }
     return resVar;
 }
+std::string FunctionCall::getID() { return ID; }
 
 ReturnOperator::ReturnOperator(Expression* value) : value(value) {}
 ReturnOperator::~ReturnOperator() {
@@ -627,6 +648,13 @@ void Program::finalize() {
     for (auto func : funcs)
         delete func;
     delete globalBlock;
+    int totalLeakSize = 0;
+    for (auto ptr : allocated)
+        totalLeakSize += ptr->size();
+    if (totalLeakSize > 0) {
+        std::cout << "Memory leaks: " << allocated.size() << " blocks, ";
+        std::cout << "total size = " << totalLeakSize << " int" << std::endl;
+    }
 }
 Var Program::runFunction(std::string id, std::vector<Var>& args) {
     for (auto func : funcs) {
@@ -634,5 +662,15 @@ Var Program::runFunction(std::string id, std::vector<Var>& args) {
             return func->eval(args, globalBlock);
     }
     throw UndefinedFunctionException(id);
+}
+void Program::addAllocated(std::vector<int>* allocatedMemory) {
+    allocated.push_back(allocatedMemory);
+}
+void Program::removeAllocated(std::vector<int>* freeMemory) {
+    auto it = std::find(allocated.begin(), allocated.end(), freeMemory);
+    if (it != allocated.end())
+        allocated.erase(it);
+    else
+        std::cout << "Already free" << std::endl;
 }
 

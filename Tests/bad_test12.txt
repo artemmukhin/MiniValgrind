@@ -1,0 +1,11 @@
+#begin
+int main() {
+    ptr p;
+    p = malloc(3);
+    ptr q = p;
+    p = malloc(10); // no free!
+    p = q;
+    free(p);
+    // memory leak: 10 int
+}
+#end

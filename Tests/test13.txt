@@ -16,5 +16,6 @@ int main() {
         B[i] = A[i] + p[i];
     }
     print(B); // "[0, 5, 10, 15, 20]"
+    free(p);
 }
 #end

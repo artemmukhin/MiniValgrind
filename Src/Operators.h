@@ -143,7 +143,7 @@ public:
     virtual void print();
     virtual ~FunctionCall();
     virtual Var eval(Block* parentBlock = nullptr);
-    //int* returnValue(Block* parentBlock);
+    std::string getID();
 };
 
 class UnaryExpression : public Expression {
@@ -241,6 +241,7 @@ class Program {
 private:
     std::list<Function*> funcs;
     Block* globalBlock;
+    std::list<std::vector<int> *> allocated;
     Program() {}
     ~Program() {}
     Program(Program const&) = delete;
@@ -252,10 +253,11 @@ public:
     }
     void setFuncs(std::list<Function*> f);
     void setGlobals(Globals* globs);
-    //std::list<Function*> getFuncs();
     void finalize();
     void run();
     Var runFunction(std::string id, std::vector<Var>& args);
+    void addAllocated(std::vector<int>* allocatedMemory);
+    void removeAllocated(std::vector<int>* freeMemory);
 };
 
 

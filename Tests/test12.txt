@@ -8,5 +8,6 @@ int main() {
     int x = p[0];
     int y = p[1] + p[2];
     print(y); // "50"
+    free(p);
 }
 #end

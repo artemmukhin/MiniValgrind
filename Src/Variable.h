@@ -13,17 +13,16 @@ class Var {
     VType type;
     int intVal;
     Var* ptrVal;
-    int* arrVal;
+    std::shared_ptr<std::vector<int> > arrVal; // two variables can contain identical arrVal
     size_t arrSize;
     bool isInit;  // isInit == false, if this is uninitialized variable
-    bool* isArrInit;  // isArrInit[i] == false, if this[i] is uninitialized element of array
+    std::shared_ptr<std::vector<bool> > isArrInit;  // isArrInit[i] == false, if this[i] is uninitialized element of array
 public:
     Var();
     Var(VType t);
     Var(VType t, unsigned size);
     Var(int int_val);
     Var(Var* ptr_val);
-    Var(const int* arr, size_t s);
     ~Var();
     Var(const Var& other);
     Var& operator=(const Var& other);
@@ -33,11 +32,12 @@ public:
     Var* getPtrVal();
     int getArrAtVal(size_t i);
     size_t getArrSize();
-    int* getArr();
-    bool* getArrInit();
+    std::shared_ptr<std::vector<int> >& getArr();
+    std::shared_ptr<std::vector<bool> >& getArrInit();
     void setIntVal(int newVal);
     void setPtrVal(Var* newVal);
     void setArrAtVal(int newVal, size_t i);
-    void setArrVal(const int* arr, size_t s, bool* sourceArrInit = nullptr);
+    void setArrVal(std::shared_ptr<std::vector<int> > &arr, std::shared_ptr<std::vector<bool> > &sourceArrInit);
+    void freeArr();
     friend std::ostream& operator<<(std::ostream & os, const Var & v);
 };

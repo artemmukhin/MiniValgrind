@@ -14,7 +14,7 @@ int main() {
     arr a[5];
     a = fillArr(s, n);
     print(a); // "[3, 3, 3, 3, 3]"
-    free(a);
+    // there is no free(a), and it is memory leak
     return 0;
 }
 
