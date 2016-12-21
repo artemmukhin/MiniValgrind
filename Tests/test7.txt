@@ -9,6 +9,7 @@ int main() {
     else {
         z = -42;
     }
-    print(z); // "-42"
+    print(z);
 }
+// answer: -42
 #end

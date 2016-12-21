@@ -1,58 +1,65 @@
+/**
+    Mini Valgrind
+    Variable.cpp
+
+    @author Artem Mukhin
+*/
+
 #include "Variable.h"
 
-Var::Var() {
-    type = T_INT;
-    intVal = 0;
-    ptrVal = nullptr;
-    arrVal = nullptr;
-    arrSize = 0;
-    isInit = false;
-    isArrInit = nullptr;
-}
+Var::Var() :
+    type(T_INT),
+    intVal(0),
+    ptrVal(nullptr),
+    arrVal(nullptr),
+    arrSize(0),
+    isInit(false),
+    isArrInit(nullptr)
+{}
 
-Var::Var(VType t) {
-    type = t;
-    intVal = 0;
-    ptrVal = nullptr;
-    arrVal = nullptr;
-    arrSize = 0;
-    isInit = false;
-    isArrInit = nullptr;
-}
+Var::Var(VType t) :
+    type(t),
+    intVal(0),
+    ptrVal(nullptr),
+    arrVal(nullptr),
+    arrSize(0),
+    isInit(false),
+    isArrInit(nullptr)
+{}
 
-Var::Var(VType t, unsigned size) {
-    if (t == T_ARR && size != 0) {
-        type = T_ARR;
-        intVal = 0;
-        ptrVal = nullptr;
-        isInit = false;
-        arrSize = size;
-        arrVal = std::make_shared<std::vector<int> >(size, 0);
-        isArrInit = std::make_shared<std::vector<bool> >(size, false);
-    }
-    else
+Var::Var(VType t, size_t size) :
+    type(T_ARR),
+    intVal(0),
+    ptrVal(nullptr),
+    isInit(false),
+    arrSize(size),
+    arrVal(std::make_shared<std::vector<int> >(size, 0)),
+    isArrInit(std::make_shared<std::vector<bool> >(size, false))
+{
+    if (t != T_ARR)
         throw InvalidTypeException("can't create int/ptr variable with size");
 }
 
-Var::Var(int int_val) {
-    type = T_INT;
-    intVal = int_val;
-    ptrVal = nullptr;
-    arrVal = nullptr;
-    isInit = true;
-    isArrInit = nullptr;
-}
+Var::Var(int intVal) :
+    type(T_INT),
+    intVal(intVal),
+    ptrVal(nullptr),
+    arrVal(nullptr),
+    isInit(true),
+    isArrInit(nullptr)
+{}
 
-Var::Var(Var* ptr_val) {
-    type = T_PTR;
-    intVal = 0;
-    ptrVal = ptr_val;
-    arrVal = nullptr;
-    isInit = true;
-    isArrInit = nullptr;
-}
+Var::Var(Var *ptrVal) :
+    type(T_PTR),
+    intVal(0),
+    ptrVal(ptrVal),
+    arrVal(nullptr),
+    isInit(true),
+    isArrInit(nullptr)
+{}
 
-Var::~Var() {
+Var::~Var()
+{
     intVal = 0;
     ptrVal = nullptr;
     arrVal = nullptr;
@@ -61,7 +68,8 @@ Var::~Var() {
     isInit = false;
 }
 
-Var::Var(const Var& other) {
+Var::Var(const Var &other)
+{
     type = other.type;
     arrSize = other.arrSize;
     ptrVal = other.ptrVal;
@@ -71,9 +79,10 @@ Var::Var(const Var& other) {
         arrVal = other.arrVal;
     if (other.isArrInit)
         isArrInit = other.isArrInit;
-    }
+}
 
-Var& Var::operator=(const Var& other) {
+Var &Var::operator=(const Var &other)
+{
     if (&other == this)
         return *this;
     type = other.type;
@@ -87,11 +96,13 @@ Var& Var::operator=(const Var& other) {
     return *this;
 }
 
-VType Var::getType() const {
+VType Var::getType() const
+{
     return type;
 }
 
-int Var::getIntVal() {
+int Var::getIntVal() const
+{
     if (type != T_INT)
         throw InvalidTypeException("invalid value's type");
     if (!isInit)
@@ -100,7 +111,8 @@ int Var::getIntVal() {
         return intVal;
 }
 
-Var* Var::getPtrVal() {
+Var *Var::getPtrVal()
+{
     if (type != T_PTR)
         throw InvalidTypeException("invalid value's type");
     if (!isInit)
@@ -108,12 +120,13 @@ Var* Var::getPtrVal() {
     return ptrVal;
 }
 
-int Var::getArrAtVal(size_t i) {
+int Var::getArrAtVal(size_t i) const
+{
     if (type == T_INT)
         throw InvalidTypeException("invalid value's type");
     else if (arrVal != nullptr) {
         if (i < arrSize) {
-            if ( (*isArrInit.get())[i] )
+            if ((*isArrInit.get())[i])
                 return (*arrVal.get())[i];
             else
                 throw NotInitVarException("not initialized array element");
@@ -125,28 +138,32 @@ int Var::getArrAtVal(size_t i) {
         throw InvalidTypeException("ptr[i] (nullptr)");
 }
 
-size_t Var::getArrSize() {
+size_t Var::getArrSize() const
+{
     if (type == T_INT)
         throw InvalidTypeException("int has no size");
     else
         return arrSize;
 }
 
-std::shared_ptr<std::vector<int> >& Var::getArr() {
+std::shared_ptr<std::vector<int> > &Var::getArr()
+{
     if (type == T_INT)
         throw InvalidTypeException("int has no array");
     else
         return arrVal;
 }
 
-std::shared_ptr<std::vector<bool> >& Var::getArrInit() {
+std::shared_ptr<std::vector<bool> > &Var::getArrInit()
+{
     if (type == T_INT)
         throw InvalidTypeException("int has no array");
     else
         return isArrInit;
 }
 
-void Var::setIntVal(int newVal) {
+void Var::setIntVal(int newVal)
+{
     if (type != T_INT)
         throw InvalidTypeException("invalid value's type");
     else {
@@ -155,7 +172,8 @@ void Var::setIntVal(int newVal) {
     }
 }
 
-void Var::setPtrVal(Var* newVal) {
+void Var::setPtrVal(Var *newVal)
+{
     if (type != T_PTR)
         throw InvalidTypeException("invalid value's type");
     else if (newVal != nullptr) {
@@ -164,7 +182,8 @@ void Var::setPtrVal(Var* newVal) {
     }
 }
 
-void Var::setArrAtVal(int newVal, size_t i) {
+void Var::setArrAtVal(int newVal, size_t i)
+{
     if (type == T_INT)
         throw InvalidTypeException("assign to int[i]");
     else if (arrVal != nullptr) {
@@ -179,15 +198,16 @@ void Var::setArrAtVal(int newVal, size_t i) {
         throw InvalidTypeException("assign to ptr[i]");
 }
 
-void Var::setArrVal(std::shared_ptr<std::vector<int> > &arr, std::shared_ptr<std::vector<bool> > &sourceArrInit) {
+void Var::setArrVal(std::shared_ptr<std::vector<int> > &sourceArr, std::shared_ptr<std::vector<bool> > &sourceArrInit)
+{
     if (type == T_INT)
         throw InvalidTypeException("invalid value's type");
-    if (arr != nullptr) {
-        if (arr.get()->size() != sourceArrInit.get()->size())
+    if (sourceArr) {
+        if (sourceArr.get()->size() != sourceArrInit.get()->size())
             throw InvalidFunctionCall("setArrVal's arguments must have identical size");
-        arrSize = arr.get()->size();
+        arrSize = sourceArr.get()->size();
         isInit = true;
-        arrVal = arr;
+        arrVal = sourceArr;
         isArrInit = sourceArrInit;
     }
     else {
@@ -197,8 +217,8 @@ void Var::setArrVal(std::shared_ptr<std::vector<int> > &arr, std::shared_ptr<std
     }
 }
 
-
-void Var::freeArr() {
+void Var::freeArr()
+{
     if (type == T_INT)
         throw InvalidTypeException("Can't free int variable");
     arrVal.reset();
@@ -207,7 +227,8 @@ void Var::freeArr() {
     isInit = false;
 }
 
-std::ostream & operator<<(std::ostream & os, const Var &v) {
+std::ostream &operator<<(std::ostream &os, const Var &v)
+{
     switch (v.type) {
         case T_INT:
             if (v.isInit)
@@ -223,12 +244,12 @@ std::ostream & operator<<(std::ostream & os, const Var &v) {
             if (v.arrVal != nullptr) {
                 os << ", arrVal = [";
                 for (size_t i = 0; i < v.arrSize - 1; i++) {
-                    if ( (*v.isArrInit.get())[i] )
+                    if ((*v.isArrInit.get())[i])
                         os << (*v.arrVal.get())[i] << ", ";
                     else
                         os << "None" << ", ";
                 }
-                if ( (*v.isArrInit.get())[v.arrSize - 1] )
+                if ((*v.isArrInit.get())[v.arrSize - 1])
                     os << (*v.arrVal.get())[v.arrSize - 1] << "]";
                 else
                     os << "None" << "]";
@@ -237,13 +258,13 @@ std::ostream & operator<<(std::ostream & os, const Var &v) {
         case T_ARR:
             os << "[";
             for (size_t i = 0; i < ((v.arrSize > 0) ? v.arrSize - 1 : 0); i++) {
-                if ( (*v.isArrInit.get())[i] )
+                if ((*v.isArrInit.get())[i])
                     os << (*v.arrVal.get())[i] << ", ";
                 else
                     os << "None" << ", ";
             }
             if (v.arrSize > 0) {
-                if ( (*v.isArrInit.get())[v.arrSize - 1] )
+                if ((*v.isArrInit.get())[v.arrSize - 1])
                     os << (*v.arrVal.get())[v.arrSize - 1] << "]";
                 else
                     os << "None" << "]";
@@ -255,7 +276,8 @@ std::ostream & operator<<(std::ostream & os, const Var &v) {
     return os;
 }
 
-bool Var::isVarInit() const {
+bool Var::isVarInit() const
+{
     return isInit;
 }
 

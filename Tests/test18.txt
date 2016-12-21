@@ -14,6 +14,7 @@ int main() {
     int a = 24;
     int b = 20;
     int gcd_a_b = gcd(a, b);
-    print(gcd_a_b); // "4"
+    print(gcd_a_b);
 }
+// answer: 4
 #end

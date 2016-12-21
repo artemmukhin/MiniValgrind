@@ -17,5 +17,5 @@ int main() {
     free(a);
     return 0;
 }
-
+// answer: [3, 3, 3, 3, 3]
 #end

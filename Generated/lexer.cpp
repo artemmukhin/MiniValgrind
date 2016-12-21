@@ -544,8 +544,15 @@ int yy_flex_debug = 0;
 
 char yytext[YYLMAX];
 char *yytext_ptr;
-#line 1 "lang.lex"
-#line 2 "lang.lex"
+#line 1 "MiniC.lex"
+/**
+    Mini Valgrind
+    lang.lex
+    Lexer for MiniC (Flex)
+
+    @author Artem Mukhin
+*/
+#line 10 "MiniC.lex"
     #define YYSTYPE MyDataType
     #include <iostream>
     #include <string>
@@ -556,7 +563,7 @@ char *yytext_ptr;
     extern MyDataType yylval;
     void yyerror(char *s);
 
-#line 560 "Generated/lexer.cpp"
+#line 567 "Generated/lexer.cpp"
 
 #define INITIAL 0
 #define STR 1
@@ -775,10 +782,10 @@ YY_DECL
 		}
 
 	{
-#line 17 "lang.lex"
+#line 25 "MiniC.lex"
 
 
-#line 782 "Generated/lexer.cpp"
+#line 789 "Generated/lexer.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -848,107 +855,107 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 19 "lang.lex"
+#line 27 "MiniC.lex"
 ; // comment
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 20 "lang.lex"
+#line 28 "MiniC.lex"
 return IF;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 21 "lang.lex"
+#line 29 "MiniC.lex"
 return ELSE;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 22 "lang.lex"
+#line 30 "MiniC.lex"
 return WHILE;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 23 "lang.lex"
+#line 31 "MiniC.lex"
 return FOR;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 24 "lang.lex"
+#line 32 "MiniC.lex"
 return RETURN;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 25 "lang.lex"
+#line 33 "MiniC.lex"
 return INT;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 26 "lang.lex"
+#line 34 "MiniC.lex"
 return PTR;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 27 "lang.lex"
+#line 35 "MiniC.lex"
 return ARR;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 28 "lang.lex"
+#line 36 "MiniC.lex"
 return EQ;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 29 "lang.lex"
+#line 37 "MiniC.lex"
 return LE;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 30 "lang.lex"
+#line 38 "MiniC.lex"
 return GE;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 31 "lang.lex"
+#line 39 "MiniC.lex"
 return NE;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 32 "lang.lex"
+#line 40 "MiniC.lex"
 return AND;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 33 "lang.lex"
+#line 41 "MiniC.lex"
 return OR;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 34 "lang.lex"
+#line 42 "MiniC.lex"
 return INC;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 35 "lang.lex"
+#line 43 "MiniC.lex"
 return DEC;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 36 "lang.lex"
+#line 44 "MiniC.lex"
 return P_BEGIN;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 37 "lang.lex"
+#line 45 "MiniC.lex"
 return P_END;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 38 "lang.lex"
+#line 46 "MiniC.lex"
 return GLOBAL;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 40 "lang.lex"
+#line 48 "MiniC.lex"
 {
                                     yylval.str = yytext;
                                     return NUM;
@@ -956,7 +963,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 45 "lang.lex"
+#line 53 "MiniC.lex"
 {
                                     yylval.str = yytext;
                                     return ID;
@@ -965,25 +972,25 @@ YY_RULE_SETUP
 case 23:
 /* rule 23 can match eol */
 YY_RULE_SETUP
-#line 50 "lang.lex"
+#line 58 "MiniC.lex"
 ; // whitespace
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 51 "lang.lex"
+#line 59 "MiniC.lex"
 { return *yytext; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 52 "lang.lex"
+#line 60 "MiniC.lex"
 yyerror("Invalid character");
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 54 "lang.lex"
+#line 62 "MiniC.lex"
 ECHO;
 	YY_BREAK
-#line 987 "Generated/lexer.cpp"
+#line 994 "Generated/lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STR):
 	yyterminate();
@@ -1997,7 +2004,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 54 "lang.lex"
+#line 62 "MiniC.lex"
 
 
 

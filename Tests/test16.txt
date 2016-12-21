@@ -10,6 +10,7 @@ int g(int p1, int p2, int p3) {
 int main() {
     int x = 7;
     int y = x + 15;
-    print( y * 10 + g(0, 0, 0) ); // "221"
+    print( y * 10 + g(0, 0, 0) );
 }
+// answer: 221
 #end

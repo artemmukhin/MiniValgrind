@@ -13,7 +13,8 @@ int main() {
     int x = 2;
     int y = 4;
     ptr m = max(&x, &y);
-    print(*m); // "4"
+    print(*m);
     return 0;
 }
+// answer: 4
 #end

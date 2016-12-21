@@ -12,7 +12,8 @@ int main() {
     global_int++;
     global_arr[1] = global_arr[0] + global_arr[1];
     int x = global_int * 10 + global_arr[1];
-    print(x); // "122"
+    print(x);
     return 0;
 }
+// answer: 122
 #end

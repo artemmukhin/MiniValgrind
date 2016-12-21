@@ -6,6 +6,7 @@ int main() {
     x = 5 + 7;
     y = 2 * (3 - 1);
     z = 10 * x - y;
-    print(z); // "116"
+    print(z);
 }
+// answer: 116
 #end

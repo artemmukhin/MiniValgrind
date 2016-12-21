@@ -8,4 +8,5 @@ int main() {
     int x = p[1];
     print(x);
 }
+// answer: 20
 #end

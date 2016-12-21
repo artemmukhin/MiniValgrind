@@ -1,3 +1,11 @@
+/**
+    Mini Valgrind
+    lang.lex
+    Lexer for MiniC (Flex)
+
+    @author Artem Mukhin
+*/
+
 %{
     #define YYSTYPE MyDataType
     #include <iostream>

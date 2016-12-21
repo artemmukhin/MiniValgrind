@@ -24,6 +24,7 @@ int main() {
             }
         }
     }
-    print(res); // "4"
+    print(res);
 }
+// answer: 4
 #end

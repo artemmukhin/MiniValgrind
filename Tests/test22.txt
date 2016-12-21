@@ -17,4 +17,5 @@ int main() {
     print(rangeArray); // "[1, 2, 3, None, None]"
     return 0;
 }
+// answer: [1, 2, 3, None, None]
 #end

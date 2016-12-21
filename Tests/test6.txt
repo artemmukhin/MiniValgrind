@@ -10,4 +10,5 @@ int main() {
     }
     print(y); // "13"
 }
+// answer: 13
 #end

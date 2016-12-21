@@ -1,9 +1,20 @@
+/**
+    Mini Valgrind
+    Operators.cpp
+
+    @author Artem Mukhin
+*/
+
 #include "Operators.h"
 
-// print table of variables after run each operator in program
-#define PRINT_VAR_TABLE false
 
-std::string VTypeToString(VType t) {
+/**
+ * Returns the string representation of variable type.
+ * @param t - Variable type.
+ * @return String representation of variable type.
+*/
+std::string VTypeToString(VType t)
+{
     switch (t) {
         case T_INT:
             return "int";
@@ -14,7 +25,14 @@ std::string VTypeToString(VType t) {
     }
 }
 
-bool VTypeIsCompatible(VType t1, VType t2) {
+/**
+ * Is two VTypes compatible
+ * @param t1 - Variable type.
+ * @param t2 - Variable type.
+ * @return True if variable types are compatible, false otherwise.
+*/
+bool VTypeIsCompatible(VType t1, VType t2)
+{
     if (t1 == t2)
         return true;
     else if ((t1 == T_PTR && t2 == T_ARR) || (t1 == T_ARR && t2 == T_PTR))
@@ -22,7 +40,13 @@ bool VTypeIsCompatible(VType t1, VType t2) {
     return false;
 }
 
-std::string indentation(unsigned indent) {
+/**
+ * Indentation with given length.
+ * @param indent - Length of indentation.
+ * @return String of spaces.
+*/
+std::string indentation(unsigned indent)
+{
     std::string res = "";
     for (unsigned i = 0; i < indent; i++)
         res += "  ";
@@ -30,35 +54,44 @@ std::string indentation(unsigned indent) {
 }
 
 // Block Operator
-Block::Block() { parentBlock = nullptr; }
-Block::Block(std::list<Operator*> newOps) {
-    ops = newOps;
-    parentBlock = nullptr;
-}
-size_t Block::size() {
-    return ops.size();
-}
-void Block::print(unsigned indent) {
-    std::cout << indentation(indent) << "{" << std::endl;
-    for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
-        (*i)->print(indent + 1);
-    }
-    std::cout << indentation(indent) << "}" << std::endl;
-}
-Block::~Block() {
-    for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end(); i++) {
-        delete *i;
-    }
+Block::Block()
+    : parentBlock(nullptr)
+{}
+
+Block::Block(std::list<Operator *> ops)
+    : ops(ops), parentBlock(nullptr)
+{}
+
+Block::~Block()
+{
+    for (auto op : ops)
+        delete op;
     clearVarTable();
 }
-void Block::run(Block* parentBlock) {
+
+Block::Block(const Block &other)
+{
+    ops = other.ops;
+    parentBlock = other.parentBlock;
+}
+
+void Block::print(unsigned indent) const
+{
+    std::cout << indentation(indent) << "{" << std::endl;
+    for (auto op : ops)
+        op->print(indent + 1);
+    std::cout << indentation(indent) << "}" << std::endl;
+}
+
+void Block::run(Block *parentBlock)
+{
     this->parentBlock = parentBlock;
     // run each operator, and output exception if there is one
-    for (std::list<Operator*>::iterator i = ops.begin(); i != ops.end() && !isReturned(); i++) {
+    for (auto op : ops) {
         try {
-            (*i)->run(this);
+            op->run(this);
         }
-        catch (const std::exception & ex) {
+        catch (const std::exception &ex) {
             std::cout << "Error:    " << ex.what() << std::endl;
             //std::string skipLine;
             //std::getline(std::cin, skipLine);
@@ -69,11 +102,20 @@ void Block::run(Block* parentBlock) {
             printVarTable();
             std::cout << std::endl;
         }
+        if (isReturned())
+            break;
     }
 }
-Var* Block::findVar(const std::string& id) {
-    Block* currBlock = this;
-    std::map<std::string, Var*>::iterator result = vars.end();
+
+size_t Block::size() const
+{
+    return ops.size();
+}
+
+Var *Block::findVar(const std::string &id)
+{
+    Block *currBlock = this;
+    std::map<std::string, Var *>::iterator result = vars.end();
     // search var with given id in this block, then in parent block, ...
     while (result == vars.end() && currBlock != nullptr) {
         if (currBlock->vars.find(id) != currBlock->vars.end())
@@ -86,25 +128,28 @@ Var* Block::findVar(const std::string& id) {
     else
         return nullptr;
 }
-void Block::addVar(const std::string& id, Var* newVar) {
-    if (findVar(id) == nullptr) {
-        vars.insert(std::pair<std::string, Var*>(id, newVar));
-    }
+
+void Block::addVar(const std::string &id, Var *newVar)
+{
+    if (!findVar(id))
+        vars.insert(std::pair<std::string, Var *>(id, newVar));
     else {
         delete newVar;
         throw UndefinedVarException("Variable " + id + "is already exists");
     }
 }
-void Block::printVarTable() const {
+
+void Block::printVarTable() const
+{
     if (parentBlock) {
         std::cout << "**** Variables of nested block ****" << std::endl;
         parentBlock->printVarTable();
     }
     else
         std::cout << "**** Variables ****" << std::endl;
-    for (std::map<std::string, Var*>::const_iterator i = vars.begin(); i != vars.end(); i++) {
-        std::cout << VTypeToString((*i).second->getType()) << " ";
-        std::cout << (*i).first << " = " << *((*i).second) << std::endl;
+    for (auto var : vars) {
+        std::cout << VTypeToString(var.second->getType()) << " ";
+        std::cout << var.first << " = " << *(var.second) << std::endl;
     }
 
     if (parentBlock)
@@ -112,57 +157,74 @@ void Block::printVarTable() const {
     else
         std::cout << "*******************" << std::endl;
 }
-void Block::clearVarTable() {
-    for (auto iter : vars) {
+
+void Block::clearVarTable()
+{
+    for (auto iter : vars)
         delete iter.second;
-    }
     vars.clear();
 }
-void Block::changeReturnValue(Var resultVal) {
-    Var* blockResult = findVar("#RESULT");
-    if (blockResult != nullptr) {
+
+void Block::changeReturnValue(Var resultVal)
+{
+    Var *blockResult = findVar("#RESULT");
+    if (blockResult) {
         if (VTypeIsCompatible(blockResult->getType(), resultVal.getType()))
             *blockResult = resultVal;
         else
             throw InvalidTypeException("Returned variable must be " + VTypeToString(blockResult->getType()) +
-                                        ", not " + VTypeToString(resultVal.getType()));
+                ", not " + VTypeToString(resultVal.getType()));
     }
     else
         throw UndefinedVarException("Block has no #RESULT for return");
 }
-bool Block::isReturned() {
-    Var* blockResult = findVar("#RESULT");
-    if (blockResult != nullptr)
+
+bool Block::isReturned()
+{
+    Var *blockResult = findVar("#RESULT");
+    if (blockResult)
         return blockResult->isVarInit();
     return false;
 }
-std::map<std::string, Var*> Block::getVars() {
+
+const std::map<std::string, Var *> &Block::getVars() const
+{
     return vars;
 }
-Block::Block(const Block &block) {
-    ops = block.ops;
-    parentBlock = block.parentBlock;
+
+const std::list<Operator *> &Block::getOps() const
+{
+    return ops;
 }
 
+ExprOperator::ExprOperator(Expression *expr)
+    : expr(expr)
+{}
 
-// Expression Operator
-ExprOperator::ExprOperator(Expression* expr) : expr(expr) {}
-void ExprOperator::print(unsigned indent) {
+void ExprOperator::print(unsigned indent) const
+{
     std::cout << indentation(indent);
     expr->print();
     std::cout << ";" << std::endl;
 }
-ExprOperator::~ExprOperator() { delete expr; }
-void ExprOperator::run(Block* parentBlock) {
+
+ExprOperator::~ExprOperator()
+{
+    delete expr;
+}
+
+void ExprOperator::run(Block *parentBlock)
+{
     expr->eval(parentBlock);
     // do nothing
 }
 
+IfOperator::IfOperator(Expression *cond, Block *thenBlock, Block *elseBlock)
+    : cond(cond), thenBlock(thenBlock), elseBlock(elseBlock)
+{}
 
-// If Operator
-IfOperator::IfOperator(Expression* cond, Block* thenBlock, Block* elseBlock) :
-        cond(cond), thenBlock(thenBlock), elseBlock(elseBlock) {}
-void IfOperator::print(unsigned indent) {
+void IfOperator::print(unsigned indent) const
+{
     std::cout << indentation(indent);
     std::cout << "if ";
     cond->print();
@@ -173,12 +235,16 @@ void IfOperator::print(unsigned indent) {
         elseBlock->print(indent);
     }
 }
-IfOperator::~IfOperator() {
+
+IfOperator::~IfOperator()
+{
     delete cond;
     delete thenBlock;
     delete elseBlock;
 }
-void IfOperator::run(Block* parentBlock) {
+
+void IfOperator::run(Block *parentBlock)
+{
     int condResult = cond->eval(parentBlock).getIntVal();
     if (condResult == 1) {
         thenBlock->run(parentBlock);
@@ -192,18 +258,26 @@ void IfOperator::run(Block* parentBlock) {
     }
 }
 
+WhileOperator::WhileOperator(Expression *cond, Block *body)
+    : cond(cond), body(body)
+{}
 
-// While Operator
-WhileOperator::WhileOperator(Expression* cond, Block* body) :
-        cond(cond), body(body) {}
-void WhileOperator::print(unsigned indent) {
+void WhileOperator::print(unsigned indent) const
+{
     std::cout << indentation(indent) << "while ";
     cond->print();
     std::cout << std::endl;
     body->print(indent);
 }
-WhileOperator::~WhileOperator() { delete cond; delete body; }
-void WhileOperator::run(Block* parentBlock) {
+
+WhileOperator::~WhileOperator()
+{
+    delete cond;
+    delete body;
+}
+
+void WhileOperator::run(Block *parentBlock)
+{
     int condResult = cond->eval(parentBlock).getIntVal();
     while (condResult == 1) {
         body->run(parentBlock);
@@ -212,19 +286,20 @@ void WhileOperator::run(Block* parentBlock) {
     }
 }
 
+ForOperator::ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body)
+    : initOp(initOp), cond(cond), stepOp(stepOp), body(body), ownBlock(new Block(std::list<Operator *>(1, initOp)))
+{}
 
-// For operator
-ForOperator::ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body) :
-        initOp(initOp), cond(cond), stepOp(stepOp), body(body) {
-    ownBlock = new Block(std::list<Operator*>(1, initOp));
-}
-ForOperator::~ForOperator() {
+ForOperator::~ForOperator()
+{
     delete cond;
     delete stepOp;
     delete ownBlock;
     delete body;
 }
-void ForOperator::print(unsigned int indent) {
+
+void ForOperator::print(unsigned int indent) const
+{
     std::cout << indentation(indent) << "for ";
     std::cout << "(";
     initOp->print();
@@ -236,7 +311,9 @@ void ForOperator::print(unsigned int indent) {
     std::cout << std::endl;
     body->print(indent);
 }
-void ForOperator::run(Block *parentBlock) {
+
+void ForOperator::run(Block *parentBlock)
+{
     ownBlock->run(parentBlock);
     int condResult = cond->eval(ownBlock).getIntVal();
     while (condResult == 1) {
@@ -248,28 +325,30 @@ void ForOperator::run(Block *parentBlock) {
     ownBlock->clearVarTable();
 }
 
+AssignOperator::AssignOperator(const std::string &ID, Expression *value, bool isDereferecing)
+    : ID(ID), value(value), index(nullptr), isDereferecing(isDereferecing)
+{}
 
+AssignOperator::AssignOperator(const std::string &ID, Expression *value, Expression *index)
+    : ID(ID), value(value), index(index), isDereferecing(false)
+{}
 
-// Assign Operator
-AssignOperator::AssignOperator(const std::string& ID, Expression* value, bool isDereferecing) :
-        ID(ID), value(value), isDereferecing(isDereferecing) {
-    index = nullptr;
-}
-AssignOperator::AssignOperator(const std::string& ID, Expression* value, Expression* index) :
-        ID(ID), value(value), index(index) {
-    isDereferecing = false;
-}
-AssignOperator::~AssignOperator() {
+AssignOperator::~AssignOperator()
+{
     delete value;
     delete index;
 }
-void AssignOperator::print(unsigned indent) {
+
+void AssignOperator::print(unsigned indent) const
+{
     std::cout << indentation(indent) << (isDereferecing ? "*" : "") << ID << " = ";
     value->print();
     std::cout << ";" << std::endl;
 }
-void AssignOperator::run(Block* parentBlock) {
-    Var* targetVar; // variable to left of the '='
+
+void AssignOperator::run(Block *parentBlock)
+{
+    Var *targetVar; // variable to left of the '='
     if (isDereferecing)
         targetVar = parentBlock->findVar(ID)->getPtrVal();
     else
@@ -285,7 +364,7 @@ void AssignOperator::run(Block* parentBlock) {
     if (index)
         assignIndex = (size_t) index->eval(parentBlock).getIntVal();
 
-    FunctionCall* valueAsFunCall = dynamic_cast<FunctionCall*>(value);
+    FunCallExpression *valueAsFunCall = dynamic_cast<FunCallExpression *>(value);
     bool isMalloc = (valueAsFunCall && valueAsFunCall->getID() == "malloc");
     Program &p = Program::Instance();
 
@@ -318,20 +397,31 @@ void AssignOperator::run(Block* parentBlock) {
 }
 
 
-// Define Operator
-DefOperator::DefOperator(VType T, const std::string& ID, Expression* value) :
-        type(T), ID(ID), value(value) {
-    size = 0;
+DefOperator::DefOperator(VType T, const std::string &ID, Expression *value)
+    : type(T), ID(ID), size(0), value(value)
+{
     if (value)
         assignOp = new AssignOperator(ID, value);
+    else
+        assignOp = nullptr;
 }
-DefOperator::DefOperator(VType T, const std::string& ID, const std::string& size, Expression* value) :
-        type(T), ID(ID), size((unsigned) stoi(size)), value(value) {
+
+DefOperator::DefOperator(VType T, const std::string &ID, const std::string &size, Expression *value)
+    : type(T), ID(ID), size((unsigned) stoi(size)), value(value)
+{
     if (value)
         assignOp = new AssignOperator(ID, value);
+    else
+        assignOp = nullptr;
 }
-DefOperator::~DefOperator() { delete assignOp; }
-void DefOperator::print(unsigned indent) {
+
+DefOperator::~DefOperator()
+{
+    delete assignOp;
+}
+
+void DefOperator::print(unsigned indent) const
+{
     std::cout << indentation(indent);
     if (type == T_INT)
         std::cout << "int " << ID;
@@ -343,25 +433,28 @@ void DefOperator::print(unsigned indent) {
         std::cout << " = " << "expr";
     std::cout << ";" << std::endl;
 }
-void DefOperator::run(Block* parentBlock) {
+
+void DefOperator::run(Block *parentBlock)
+{
     if (type == T_ARR && size != 0) {
-        Var* newVar = new Var(T_ARR, size);
+        Var *newVar = new Var(T_ARR, size);
         parentBlock->addVar(ID, newVar);
     }
     else {
-        Var* newVar = new Var(type);
+        Var *newVar = new Var(type);
         parentBlock->addVar(ID, newVar);
-        if (value != nullptr) {
+        if (value)
             assignOp->run(parentBlock);
-        }
     }
 }
 
-
 // Function call
-FunctionCall::FunctionCall(const std::string& ID, const std::vector<Expression*>& args) :
-        ID(ID), args(args) {}
-void FunctionCall::print() {
+FunCallExpression::FunCallExpression(const std::string &ID, const std::vector<Expression *> &args)
+    : ID(ID), args(args)
+{}
+
+void FunCallExpression::print() const
+{
     std::cout << ID << "(";
     for (auto i = args.begin(); i != args.end(); i++) {
         if (i != args.begin())
@@ -370,23 +463,26 @@ void FunctionCall::print() {
     }
     std::cout << ")";
 }
-FunctionCall::~FunctionCall() {
-    for (auto i = args.begin(); i != args.end(); i++) {
-        delete *i;
-    }
+
+FunCallExpression::~FunCallExpression()
+{
+    for (auto arg : args)
+        delete arg;
 }
-Var FunctionCall::eval(Block* parentBlock) {
+
+Var FunCallExpression::eval(Block *parentBlock)
+{
     Var resVar;
-    Program& p = Program::Instance();
+    Program &p = Program::Instance();
     if (ID == "malloc" && args.size() == 1) {
         size_t sizemem = (size_t) (args.front())->eval(parentBlock).getIntVal();
         resVar = Var(T_ARR, sizemem);
     }
     else if (ID == "free" && args.size() == 1) {
-        VarExpression* varExpr = dynamic_cast<VarExpression*>(args.front());
+        VarExpression *varExpr = dynamic_cast<VarExpression *>(args.front());
         if (!varExpr)
             throw InvalidTypeException("Argument of free function must be variable");
-        Var* var = parentBlock->findVar(varExpr->getID());
+        Var *var = parentBlock->findVar(varExpr->getID());
         if (!var)
             throw UndefinedVarException();
         auto freeMemory = var->getArr().get();
@@ -409,35 +505,54 @@ Var FunctionCall::eval(Block* parentBlock) {
     }
     return resVar;
 }
-std::string FunctionCall::getID() { return ID; }
 
-ReturnOperator::ReturnOperator(Expression* value) : value(value) {}
-ReturnOperator::~ReturnOperator() {
+const std::string &FunCallExpression::getID() const
+{
+    return ID;
+}
+
+ReturnOperator::ReturnOperator(Expression *value)
+    : value(value)
+{}
+
+ReturnOperator::~ReturnOperator()
+{
     delete value;
 }
-void ReturnOperator::print(unsigned int indent) {
+
+void ReturnOperator::print(unsigned int indent) const
+{
     std::cout << indentation(indent) << "return ";
     value->print();
     std::cout << ";" << std::endl;
 }
-void ReturnOperator::run(Block* parentBlock) {
-    parentBlock->changeReturnValue( value->eval(parentBlock) );
+
+void ReturnOperator::run(Block *parentBlock)
+{
+    parentBlock->changeReturnValue(value->eval(parentBlock));
 }
 
-
-
 // Unary Expression
-UnaryExpression::UnaryExpression(const char* op, Expression* arg) :
-        op(op), arg(arg) {}
-void UnaryExpression::print() {
+UnaryExpression::UnaryExpression(const char *op, Expression *arg)
+    : op(op), arg(arg)
+{}
+
+void UnaryExpression::print() const
+{
     std::cout << op;
     arg->print();
 }
-UnaryExpression::~UnaryExpression() { delete arg; }
-Var UnaryExpression::eval(Block* parentBlock) {
+
+UnaryExpression::~UnaryExpression()
+{
+    delete arg;
+}
+
+Var UnaryExpression::eval(Block *parentBlock)
+{
     Var result;
-    VarExpression* argVarExpr = dynamic_cast<VarExpression *>(arg);
-    Var* argVar = nullptr;
+    VarExpression *argVarExpr = dynamic_cast<VarExpression *>(arg);
+    Var *argVar = nullptr;
     if (argVarExpr)
         argVar = parentBlock->findVar(argVarExpr->getID());
 
@@ -494,19 +609,28 @@ Var UnaryExpression::eval(Block* parentBlock) {
     return result;
 }
 
-
 // Binary Expression
-BinaryExpression::BinaryExpression(const char* op, Expression* arg1, Expression* arg2) :
-        op(op), arg1(arg1), arg2(arg2) {}
-void BinaryExpression::print() {
+BinaryExpression::BinaryExpression(const char *op, Expression *arg1, Expression *arg2)
+    : op(op), arg1(arg1), arg2(arg2)
+{}
+
+void BinaryExpression::print() const
+{
     std::cout << "(";
     arg1->print();
     std::cout << " " << op << " ";
     arg2->print();
     std::cout << ")";
 }
-BinaryExpression::~BinaryExpression() { delete arg1; delete arg2; }
-Var BinaryExpression::eval(Block* parentBlock) {
+
+BinaryExpression::~BinaryExpression()
+{
+    delete arg1;
+    delete arg2;
+}
+
+Var BinaryExpression::eval(Block *parentBlock)
+{
     Var result;
     if (*op == '+')
         result = Var(arg1->eval(parentBlock).getIntVal() + arg2->eval(parentBlock).getIntVal());
@@ -542,12 +666,19 @@ Var BinaryExpression::eval(Block* parentBlock) {
     return result;
 }
 
-
 // Array at Expression
-ArrayAtExpression::ArrayAtExpression(std::string ID, Expression* index) : ID(ID), index(index) {}
-ArrayAtExpression::~ArrayAtExpression() { delete index; }
-Var ArrayAtExpression::eval(Block* parentBlock) {
-    Var* sourceArr = parentBlock->findVar(ID);
+ArrayAtExpression::ArrayAtExpression(std::string ID, Expression *index)
+    : ID(ID), index(index)
+{}
+
+ArrayAtExpression::~ArrayAtExpression()
+{
+    delete index;
+}
+
+Var ArrayAtExpression::eval(Block *parentBlock)
+{
+    Var *sourceArr = parentBlock->findVar(ID);
     if (sourceArr == nullptr)
         throw UndefinedVarException("Array " + ID + " doesn't exist");
     else if (sourceArr->getType() == T_INT && index != nullptr) {
@@ -555,96 +686,165 @@ Var ArrayAtExpression::eval(Block* parentBlock) {
     }
     return Var(sourceArr->getArrAtVal((unsigned) index->eval(parentBlock).getIntVal()));
 }
-void ArrayAtExpression::print() {
+
+void ArrayAtExpression::print() const
+{
     std::cout << ID << "[" << "index" << "]";
 }
 
+// ValueExpression Expression
+ValueExpression::ValueExpression(const std::string &val)
+    : val(atoi(val.c_str()))
+{}
 
-// Value Expression
-Value::Value(const std::string& val) : val(atoi(val.c_str())) {}
-Value::~Value() { }
-void Value::print() { std::cout << val; }
-Var Value::eval(Block* parentBlock) {
+ValueExpression::~ValueExpression()
+{}
+
+void ValueExpression::print() const
+{
+    std::cout << val;
+}
+
+Var ValueExpression::eval(Block *parentBlock)
+{
     return Var(val);
 }
 
-
 // Variable Expression
-VarExpression::VarExpression(const std::string& ID) : ID(ID) {}
-VarExpression::~VarExpression() {
+VarExpression::VarExpression(const std::string &ID)
+    : ID(ID)
+{}
 
+VarExpression::~VarExpression()
+{}
+
+void VarExpression::print() const
+{
+    std::cout << ID;
 }
-void VarExpression::print() { std::cout << ID; }
-std::string VarExpression::getID() { return ID; }
-Var VarExpression::eval(Block* parentBlock) {
-    Var* thisVar = parentBlock->findVar(ID);
+
+const std::string &VarExpression::getID() const
+{
+    return ID;
+}
+
+Var VarExpression::eval(Block *parentBlock)
+{
+    Var *thisVar = parentBlock->findVar(ID);
     if (thisVar == nullptr)
         throw UndefinedVarException(ID);
     return *thisVar;
 }
 
-Globals::Globals() {}
-Globals::Globals(Block *globalsBlock) : globalsBlock(globalsBlock) {}
-void Globals::addToBlock(Block *block) {
+Globals::Globals()
+{}
+
+Globals::Globals(Block *globalsBlock)
+    : globalsBlock(globalsBlock)
+{}
+
+void Globals::addToBlock(Block *block)
+{
     globalsBlock->run(nullptr);
     auto globalVars = globalsBlock->getVars();
-    for (auto var : globalVars) {
+    for (auto var : globalVars)
         block->addVar(var.first, var.second);
-    }
 }
 
-Parameter::Parameter(VType paramType, const std::string &id) : paramType(paramType), id(id) {}
-Parameter::~Parameter() {}
-VType Parameter::getParamType() const {
+Parameter::Parameter(VType paramType, const std::string &id)
+    : paramType(paramType), id(id)
+{}
+
+Parameter::~Parameter()
+{}
+
+VType Parameter::getParamType() const
+{
     return paramType;
 }
-const std::string &Parameter::getId() const {
+
+const std::string &Parameter::getID() const
+{
     return id;
 }
 
-Function::Function(const std::string &id, VType returnType, const std::vector<Parameter*> params, Block *body) :
-        id(id), returnType(returnType), params(params), body(body) {}
-Function::~Function() {
+Function::Function(const std::string &id, VType returnType, const std::vector<Parameter *> params, Block *body)
+    : id(id), returnType(returnType), params(params), body(body)
+{}
+
+Function::~Function()
+{
     for (auto param : params)
         delete param;
     params.clear();
     delete body;
 }
-// MiniValgrind doesn't support call stack, so if you call function inside it,
-// the first call will lost
-Var Function::eval(const std::vector<Var>& args, Block* globalBlock) {
+
+Var Function::eval(const std::vector<Var> &args, Block *globalBlock)
+{
     body->clearVarTable();
     if (args.size() != params.size())
         throw InvalidFunctionCall("too many (few) arguments");
-    body->addVar("#RESULT", new Var(returnType));
+    //body->addVar("#RESULT", new Var(returnType));
     for (size_t i = 0; i < params.size(); i++) {
         if (args[i].getType() == params[i]->getParamType())
-            body->addVar(params[i]->getId(), new Var(args[i]));
+            body->addVar(params[i]->getID(), new Var(args[i]));
         else
             throw InvalidFunctionCall("invalid parameter's type (" + VTypeToString(args[i].getType()) +
-                                      "instead of " + VTypeToString(params[i]->getParamType()) + ")");
+                "instead of " + VTypeToString(params[i]->getParamType()) + ")");
     }
-    body->run(globalBlock);
-    Var res = *(body->findVar("#RESULT"));
-    body->clearVarTable();
-    return res;
+    FunctionCall newCall(body->getOps(), returnType, params, args);
+    return newCall.execute(globalBlock);
 }
-const std::string &Function::getId() const {
+
+const std::string &Function::getID() const
+{
     return id;
 }
 
-void Program::run() {
+FunctionCall::FunctionCall(const std::list<Operator *> &ops,
+                           VType returnType,
+                           const std::vector<Parameter *> &params,
+                           const std::vector<Var> &args)
+{
+    body = new Block(ops);
+    body->addVar("#RESULT", new Var(returnType));
+    for (size_t i = 0; i < args.size(); i++)
+        body->addVar(params[i]->getID(), new Var(args[i]));
+}
+
+FunctionCall::~FunctionCall()
+{
+    // don't delete body completely, because body->ops will be delete in ~Function()
+    // actually there is a small memory leak, to do
+    body->clearVarTable();
+}
+
+Var FunctionCall::execute(Block *globalBlock)
+{
+    body->run(globalBlock);
+    return *(body->findVar("#RESULT"));
+}
+
+void Program::run()
+{
     auto defaultArgs = std::vector<Var>();
     runFunction("main", defaultArgs);
 }
-void Program::setFuncs(std::list<Function *> f) {
+
+void Program::setFuncs(std::list<Function *> f)
+{
     funcs = f;
 }
-void Program::setGlobals(Globals* globs) {
+
+void Program::setGlobals(Globals *globs)
+{
     globalBlock = new Block();
     globs->addToBlock(globalBlock);
 }
-void Program::finalize() {
+
+void Program::finalize()
+{
     for (auto func : funcs)
         delete func;
     delete globalBlock;
@@ -656,21 +856,26 @@ void Program::finalize() {
         std::cout << "total size = " << totalLeakSize << " int" << std::endl;
     }
 }
-Var Program::runFunction(std::string id, std::vector<Var>& args) {
+
+Var Program::runFunction(std::string id, std::vector<Var> &args)
+{
     for (auto func : funcs) {
-        if (func->getId() == id)
+        if (func->getID() == id)
             return func->eval(args, globalBlock);
     }
     throw UndefinedFunctionException(id);
 }
-void Program::addAllocated(std::vector<int>* allocatedMemory) {
+
+void Program::addAllocated(std::vector<int> *allocatedMemory)
+{
     allocated.push_back(allocatedMemory);
 }
-void Program::removeAllocated(std::vector<int>* freeMemory) {
+
+void Program::removeAllocated(std::vector<int> *freeMemory)
+{
     auto it = std::find(allocated.begin(), allocated.end(), freeMemory);
     if (it != allocated.end())
         allocated.erase(it);
     else
         std::cout << "Already free" << std::endl;
 }
-

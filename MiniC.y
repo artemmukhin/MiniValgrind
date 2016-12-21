@@ -1,3 +1,11 @@
+/**
+    Mini Valgrind
+    lang.y
+    Parser for MiniC (Bison)
+
+    @author Artem Mukhin
+*/
+
 %{
     #define YYSTYPE MyDataType
     #include <iostream>
@@ -116,7 +124,7 @@ TERM:   VAL
 |       TERM '/' VAL                        { $$ = new BinaryExpression("/", $1, $3); }
 ;
 
-VAL:    NUM                                 { $$ = new Value($1); }
+VAL:    NUM                                 { $$ = new ValueExpression($1); }
 |       '-' VAL                             { $$ = new UnaryExpression("-", $2); }
 |       '!' VAL                             { $$ = new UnaryExpression("!", $2); }
 |       VAL INC                             { $$ = new UnaryExpression(".++", $1); }
@@ -125,7 +133,7 @@ VAL:    NUM                                 { $$ = new Value($1); }
 |       DEC VAL                             { $$ = new UnaryExpression("--.", $2); }
 |       '(' EXPR ')'                        { $$ = $2; }
 |       ID                                  { $$ = new VarExpression($1); }
-|       ID '(' ARGS ')'                     { $$ = new FunctionCall($1, $3); }
+|       ID '(' ARGS ')'                     { $$ = new FunCallExpression($1, $3); }
 |       '&' VAL                             { $$ = new UnaryExpression("&", $2); }
 |       '*' VAL                             { $$ = new UnaryExpression("*", $2); }
 |       ID '[' EXPR2 ']'                    { $$ = new ArrayAtExpression($1, $3); }

@@ -10,6 +10,7 @@ int main() {
         b = temp;
     }
     int res = a;
-    print(res); // "4"
+    print(res);
 }
+// answer: 4
 #end

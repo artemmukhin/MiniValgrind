@@ -9,4 +9,5 @@ int main() {
     y = *p;
     print(y); // "10227"
 }
+// answer: 10227
 #end

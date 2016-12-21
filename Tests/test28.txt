@@ -1,7 +1,7 @@
 #begin
 
 // Merge sort
-// recursive merge sort now works, see test28.txt
+// recursive merge sort doesn't work because MiniValgrind doesn't support call stack
 
 global {
     arr A[8];
@@ -55,6 +55,7 @@ int mergeSort(int n) {
        }
    }
 }
+
 
 int main() {
     int size = 8;

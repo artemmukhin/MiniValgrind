@@ -9,4 +9,5 @@ int main() {
     print(A[1]); // "27"
     print(A[2]); // "-27"
 }
+// answer: 27\n-27
 #end

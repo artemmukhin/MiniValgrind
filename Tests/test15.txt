@@ -8,6 +8,7 @@ int main() {
     int x = 7;
     int y;
     y = f(x);
-    print(y); // "12"
+    print(y);
 }
+// answer: 12
 #end

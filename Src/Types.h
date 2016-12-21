@@ -1,3 +1,10 @@
+/**
+    Mini Valgrind
+    Types.h
+
+    @author Artem Mukhin
+*/
+
 #pragma once
 
 #include <cstdlib>
@@ -11,5 +18,11 @@
 #include <memory>
 #include <algorithm>
 
-enum VType { T_INT, T_PTR, T_ARR };
-enum EType { E_UNARY, E_BIN, E_VAL, E_VAR, E_FUNC, E_ARRAT }; // expression type
+enum VType
+{
+    T_INT, T_PTR, T_ARR
+};
+enum EType
+{
+    E_UNARY, E_BIN, E_VAL, E_VAR, E_FUNC, E_ARRAT
+}; // expression type
