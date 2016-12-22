@@ -12,7 +12,7 @@
     #include <string>
     #include "../Src/Types.h"
     #include "../Src/Variable.h"
-    #include "../Src/Operators.h"
+    #include "../Src/Statements.h"
     extern int yylineno;
     int yylex();
     void yyerror(char *s) {
@@ -84,22 +84,22 @@ OPS:    OP                                  { $$.clear(); $$.push_back($1); }
 ;
 
 OP:     OP1                                 { $$ = $$; }
-|       IF'(' EXPR ')' BLOCK ELSE BLOCK     { $$ = new IfOperator($3, $5, $7); }
-|       IF '(' EXPR ')' BLOCK               { $$ = new IfOperator($3, $5, nullptr); }
-|       WHILE '(' EXPR ')' BLOCK            { $$ = new WhileOperator($3, $5); }
-|       FOR '(' OP1 EXPR ';' OP1 ')' BLOCK  { $$ = new ForOperator($3, $4, $6, $8); }
-|       RETURN EXPR ';'                     { $$ = new ReturnOperator($2); }
+|       IF'(' EXPR ')' BLOCK ELSE BLOCK     { $$ = new IfStatement($3, $5, $7); }
+|       IF '(' EXPR ')' BLOCK               { $$ = new IfStatement($3, $5, nullptr); }
+|       WHILE '(' EXPR ')' BLOCK            { $$ = new WhileStatement($3, $5); }
+|       FOR '(' OP1 EXPR ';' OP1 ')' BLOCK  { $$ = new ForStatement($3, $4, $6, $8); }
+|       RETURN EXPR ';'                     { $$ = new ReturnStatement($2); }
 ;
 
-OP1:    INT ID ';'                          { $$ = new DefOperator(T_INT, $2, nullptr); }
-|       INT ID '=' EXPR ';'                 { $$ = new DefOperator(T_INT, $2, $4); }
-|       PTR ID ';'                          { $$ = new DefOperator(T_PTR, $2, nullptr); }
-|       PTR ID '=' EXPR ';'                 { $$ = new DefOperator(T_PTR, $2, $4); }
-|       ARR ID '[' NUM ']' ';'              { $$ = new DefOperator(T_ARR, $2, $4, nullptr); }
-|       ID '=' EXPR ';'                     { $$ = new AssignOperator($1, $3); }
-|       '*' ID '=' EXPR ';'                 { $$ = new AssignOperator($2, $4, true); }
-|       ID '[' EXPR2 ']' '=' EXPR2 ';'      { $$ = new AssignOperator($1, $6, $3); }
-|       EXPR ';'                            { $$ = new ExprOperator($1); }
+OP1:    INT ID ';'                          { $$ = new DefStatement(T_INT, $2, nullptr); }
+|       INT ID '=' EXPR ';'                 { $$ = new DefStatement(T_INT, $2, $4); }
+|       PTR ID ';'                          { $$ = new DefStatement(T_PTR, $2, nullptr); }
+|       PTR ID '=' EXPR ';'                 { $$ = new DefStatement(T_PTR, $2, $4); }
+|       ARR ID '[' NUM ']' ';'              { $$ = new DefStatement(T_ARR, $2, $4, nullptr); }
+|       ID '=' EXPR ';'                     { $$ = new AssignStatement($1, $3); }
+|       '*' ID '=' EXPR ';'                 { $$ = new AssignStatement($2, $4, true); }
+|       ID '[' EXPR2 ']' '=' EXPR2 ';'      { $$ = new AssignStatement($1, $6, $3); }
+|       EXPR ';'                            { $$ = new ExprStatement($1); }
 ;
 
 EXPR:   EXPR2

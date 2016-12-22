@@ -69,7 +69,7 @@
     #include <string>
     #include "../Src/Types.h"
     #include "../Src/Variable.h"
-    #include "../Src/Operators.h"
+    #include "../Src/Statements.h"
     extern int yylineno;
     int yylex();
     void yyerror(char *s) {
@@ -1483,85 +1483,85 @@ yyreduce:
 
   case 21:
 #line 87 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new IfOperator((yyvsp[-4].expr), (yyvsp[-2].block), (yyvsp[0].block)); }
+    { (yyval.oper) = new IfStatement((yyvsp[-4].expr), (yyvsp[-2].block), (yyvsp[0].block)); }
 #line 1488 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 22:
 #line 88 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new IfOperator((yyvsp[-2].expr), (yyvsp[0].block), nullptr); }
+    { (yyval.oper) = new IfStatement((yyvsp[-2].expr), (yyvsp[0].block), nullptr); }
 #line 1494 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 23:
 #line 89 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new WhileOperator((yyvsp[-2].expr), (yyvsp[0].block)); }
+    { (yyval.oper) = new WhileStatement((yyvsp[-2].expr), (yyvsp[0].block)); }
 #line 1500 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 24:
 #line 90 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new ForOperator((yyvsp[-5].oper), (yyvsp[-4].expr), (yyvsp[-2].oper), (yyvsp[0].block)); }
+    { (yyval.oper) = new ForStatement((yyvsp[-5].oper), (yyvsp[-4].expr), (yyvsp[-2].oper), (yyvsp[0].block)); }
 #line 1506 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 25:
 #line 91 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new ReturnOperator((yyvsp[-1].expr)); }
+    { (yyval.oper) = new ReturnStatement((yyvsp[-1].expr)); }
 #line 1512 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 26:
 #line 94 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefOperator(T_INT, (yyvsp[-1].str), nullptr); }
+    { (yyval.oper) = new DefStatement(T_INT, (yyvsp[-1].str), nullptr); }
 #line 1518 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 27:
 #line 95 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefOperator(T_INT, (yyvsp[-3].str), (yyvsp[-1].expr)); }
+    { (yyval.oper) = new DefStatement(T_INT, (yyvsp[-3].str), (yyvsp[-1].expr)); }
 #line 1524 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 28:
 #line 96 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefOperator(T_PTR, (yyvsp[-1].str), nullptr); }
+    { (yyval.oper) = new DefStatement(T_PTR, (yyvsp[-1].str), nullptr); }
 #line 1530 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 29:
 #line 97 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefOperator(T_PTR, (yyvsp[-3].str), (yyvsp[-1].expr)); }
+    { (yyval.oper) = new DefStatement(T_PTR, (yyvsp[-3].str), (yyvsp[-1].expr)); }
 #line 1536 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 30:
 #line 98 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefOperator(T_ARR, (yyvsp[-4].str), (yyvsp[-2].str), nullptr); }
+    { (yyval.oper) = new DefStatement(T_ARR, (yyvsp[-4].str), (yyvsp[-2].str), nullptr); }
 #line 1542 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 31:
 #line 99 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new AssignOperator((yyvsp[-3].str), (yyvsp[-1].expr)); }
+    { (yyval.oper) = new AssignStatement((yyvsp[-3].str), (yyvsp[-1].expr)); }
 #line 1548 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 32:
 #line 100 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new AssignOperator((yyvsp[-3].str), (yyvsp[-1].expr), true); }
+    { (yyval.oper) = new AssignStatement((yyvsp[-3].str), (yyvsp[-1].expr), true); }
 #line 1554 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 33:
 #line 101 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new AssignOperator((yyvsp[-6].str), (yyvsp[-1].expr), (yyvsp[-4].expr)); }
+    { (yyval.oper) = new AssignStatement((yyvsp[-6].str), (yyvsp[-1].expr), (yyvsp[-4].expr)); }
 #line 1560 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 34:
 #line 102 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new ExprOperator((yyvsp[-1].expr)); }
+    { (yyval.oper) = new ExprStatement((yyvsp[-1].expr)); }
 #line 1566 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 

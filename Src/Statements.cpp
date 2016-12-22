@@ -1,11 +1,11 @@
 /**
     Mini Valgrind
-    Operators.cpp
+    Statements.cpp
 
     @author Artem Mukhin
 */
 
-#include "Operators.h"
+#include "Statements.h"
 
 
 /**
@@ -53,12 +53,12 @@ std::string indentation(unsigned indent)
     return res;
 }
 
-// Block Operator
+// Block Statement
 Block::Block()
     : parentBlock(nullptr)
 {}
 
-Block::Block(std::list<Operator *> ops)
+Block::Block(std::list<Statement *> ops)
     : ops(ops), parentBlock(nullptr)
 {}
 
@@ -86,7 +86,7 @@ void Block::print(unsigned indent) const
 void Block::run(Block *parentBlock)
 {
     this->parentBlock = parentBlock;
-    // run each operator, and output exception if there is one
+    // run each statement, and output exception if there is one
     for (auto op : ops) {
         try {
             op->run(this);
@@ -192,38 +192,38 @@ const std::map<std::string, Var *> &Block::getVars() const
     return vars;
 }
 
-const std::list<Operator *> &Block::getOps() const
+const std::list<Statement *> &Block::getOps() const
 {
     return ops;
 }
 
-ExprOperator::ExprOperator(Expression *expr)
+ExprStatement::ExprStatement(Expression *expr)
     : expr(expr)
 {}
 
-void ExprOperator::print(unsigned indent) const
+void ExprStatement::print(unsigned indent) const
 {
     std::cout << indentation(indent);
     expr->print();
     std::cout << ";" << std::endl;
 }
 
-ExprOperator::~ExprOperator()
+ExprStatement::~ExprStatement()
 {
     delete expr;
 }
 
-void ExprOperator::run(Block *parentBlock)
+void ExprStatement::run(Block *parentBlock)
 {
     expr->eval(parentBlock);
     // do nothing
 }
 
-IfOperator::IfOperator(Expression *cond, Block *thenBlock, Block *elseBlock)
+IfStatement::IfStatement(Expression *cond, Block *thenBlock, Block *elseBlock)
     : cond(cond), thenBlock(thenBlock), elseBlock(elseBlock)
 {}
 
-void IfOperator::print(unsigned indent) const
+void IfStatement::print(unsigned indent) const
 {
     std::cout << indentation(indent);
     std::cout << "if ";
@@ -236,14 +236,14 @@ void IfOperator::print(unsigned indent) const
     }
 }
 
-IfOperator::~IfOperator()
+IfStatement::~IfStatement()
 {
     delete cond;
     delete thenBlock;
     delete elseBlock;
 }
 
-void IfOperator::run(Block *parentBlock)
+void IfStatement::run(Block *parentBlock)
 {
     int condResult = cond->eval(parentBlock).getIntVal();
     if (condResult == 1) {
@@ -258,11 +258,11 @@ void IfOperator::run(Block *parentBlock)
     }
 }
 
-WhileOperator::WhileOperator(Expression *cond, Block *body)
+WhileStatement::WhileStatement(Expression *cond, Block *body)
     : cond(cond), body(body)
 {}
 
-void WhileOperator::print(unsigned indent) const
+void WhileStatement::print(unsigned indent) const
 {
     std::cout << indentation(indent) << "while ";
     cond->print();
@@ -270,13 +270,13 @@ void WhileOperator::print(unsigned indent) const
     body->print(indent);
 }
 
-WhileOperator::~WhileOperator()
+WhileStatement::~WhileStatement()
 {
     delete cond;
     delete body;
 }
 
-void WhileOperator::run(Block *parentBlock)
+void WhileStatement::run(Block *parentBlock)
 {
     int condResult = cond->eval(parentBlock).getIntVal();
     while (condResult == 1) {
@@ -286,11 +286,11 @@ void WhileOperator::run(Block *parentBlock)
     }
 }
 
-ForOperator::ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body)
-    : initOp(initOp), cond(cond), stepOp(stepOp), body(body), ownBlock(new Block(std::list<Operator *>(1, initOp)))
+ForStatement::ForStatement(Statement *initOp, Expression *cond, Statement *stepOp, Block *body)
+    : initOp(initOp), cond(cond), stepOp(stepOp), body(body), ownBlock(new Block(std::list<Statement *>(1, initOp)))
 {}
 
-ForOperator::~ForOperator()
+ForStatement::~ForStatement()
 {
     delete cond;
     delete stepOp;
@@ -298,7 +298,7 @@ ForOperator::~ForOperator()
     delete body;
 }
 
-void ForOperator::print(unsigned int indent) const
+void ForStatement::print(unsigned int indent) const
 {
     std::cout << indentation(indent) << "for ";
     std::cout << "(";
@@ -312,7 +312,7 @@ void ForOperator::print(unsigned int indent) const
     body->print(indent);
 }
 
-void ForOperator::run(Block *parentBlock)
+void ForStatement::run(Block *parentBlock)
 {
     ownBlock->run(parentBlock);
     int condResult = cond->eval(ownBlock).getIntVal();
@@ -325,28 +325,28 @@ void ForOperator::run(Block *parentBlock)
     ownBlock->clearVarTable();
 }
 
-AssignOperator::AssignOperator(const std::string &ID, Expression *value, bool isDereferecing)
+AssignStatement::AssignStatement(const std::string &ID, Expression *value, bool isDereferecing)
     : ID(ID), value(value), index(nullptr), isDereferecing(isDereferecing)
 {}
 
-AssignOperator::AssignOperator(const std::string &ID, Expression *value, Expression *index)
+AssignStatement::AssignStatement(const std::string &ID, Expression *value, Expression *index)
     : ID(ID), value(value), index(index), isDereferecing(false)
 {}
 
-AssignOperator::~AssignOperator()
+AssignStatement::~AssignStatement()
 {
     delete value;
     delete index;
 }
 
-void AssignOperator::print(unsigned indent) const
+void AssignStatement::print(unsigned indent) const
 {
     std::cout << indentation(indent) << (isDereferecing ? "*" : "") << ID << " = ";
     value->print();
     std::cout << ";" << std::endl;
 }
 
-void AssignOperator::run(Block *parentBlock)
+void AssignStatement::run(Block *parentBlock)
 {
     Var *targetVar; // variable to left of the '='
     if (isDereferecing)
@@ -397,30 +397,30 @@ void AssignOperator::run(Block *parentBlock)
 }
 
 
-DefOperator::DefOperator(VType T, const std::string &ID, Expression *value)
+DefStatement::DefStatement(VType T, const std::string &ID, Expression *value)
     : type(T), ID(ID), size(0), value(value)
 {
     if (value)
-        assignOp = new AssignOperator(ID, value);
+        assignOp = new AssignStatement(ID, value);
     else
         assignOp = nullptr;
 }
 
-DefOperator::DefOperator(VType T, const std::string &ID, const std::string &size, Expression *value)
+DefStatement::DefStatement(VType T, const std::string &ID, const std::string &size, Expression *value)
     : type(T), ID(ID), size((unsigned) stoi(size)), value(value)
 {
     if (value)
-        assignOp = new AssignOperator(ID, value);
+        assignOp = new AssignStatement(ID, value);
     else
         assignOp = nullptr;
 }
 
-DefOperator::~DefOperator()
+DefStatement::~DefStatement()
 {
     delete assignOp;
 }
 
-void DefOperator::print(unsigned indent) const
+void DefStatement::print(unsigned indent) const
 {
     std::cout << indentation(indent);
     if (type == T_INT)
@@ -434,7 +434,7 @@ void DefOperator::print(unsigned indent) const
     std::cout << ";" << std::endl;
 }
 
-void DefOperator::run(Block *parentBlock)
+void DefStatement::run(Block *parentBlock)
 {
     if (type == T_ARR && size != 0) {
         Var *newVar = new Var(T_ARR, size);
@@ -511,23 +511,23 @@ const std::string &FunCallExpression::getID() const
     return ID;
 }
 
-ReturnOperator::ReturnOperator(Expression *value)
+ReturnStatement::ReturnStatement(Expression *value)
     : value(value)
 {}
 
-ReturnOperator::~ReturnOperator()
+ReturnStatement::~ReturnStatement()
 {
     delete value;
 }
 
-void ReturnOperator::print(unsigned int indent) const
+void ReturnStatement::print(unsigned int indent) const
 {
     std::cout << indentation(indent) << "return ";
     value->print();
     std::cout << ";" << std::endl;
 }
 
-void ReturnOperator::run(Block *parentBlock)
+void ReturnStatement::run(Block *parentBlock)
 {
     parentBlock->changeReturnValue(value->eval(parentBlock));
 }
@@ -802,7 +802,7 @@ const std::string &Function::getID() const
     return id;
 }
 
-FunctionCall::FunctionCall(const std::list<Operator *> &ops,
+FunctionCall::FunctionCall(const std::list<Statement *> &ops,
                            VType returnType,
                            const std::vector<Parameter *> &params,
                            const std::vector<Var> &args)
@@ -817,6 +817,9 @@ FunctionCall::~FunctionCall()
 {
     // don't delete body completely, because body->ops will be delete in ~Function()
     // actually there is a small memory leak, to do
+    //
+    // probable solution:
+    // add method clone() to Block, which will calls methods clone() of each Statement in ops...
     body->clearVarTable();
 }
 

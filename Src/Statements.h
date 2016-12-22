@@ -1,17 +1,17 @@
 /**
     Mini Valgrind
-    Operators.h
+    Statements.h
 
     This file contains definitions of following classes:
-    Operator
+    Statements
         Block
-        ExprOperator
-        IfOperator
-        WhileOperator
-        ForOperator
-        AssignOperator
-        DefOperator
-        ReturnOperator
+        ExprStatement
+        IfStatement
+        WhileStatement
+        ForStatement
+        AssignStatement
+        DefStatement
+        ReturnStatement
     Expression
         FunCallExpression
         UnaryExpression
@@ -36,28 +36,28 @@
 #include "Exceptions.h"
 #include <algorithm>
 
-// print table of variables after run each operator in program
+// print table of variables after run each statement in program
 const bool PRINT_VAR_TABLE = false;
 
 class Block;
 
-class Operator
+class Statement
 {
 public:
-    Operator()
+    Statement()
     {}
 
-    virtual ~Operator()
+    virtual ~Statement()
     {}
 
     /**
-     * Print operator
-     * @param indent - Length of indentation before operator.
+     * Print statement
+     * @param indent - Length of indentation before statement.
     */
     virtual void print(unsigned indent = 0) const = 0;
 
     /**
-     * Run operator
+     * Run statement
      * @param parentBlock - Block inside which this block is located.
     */
     virtual void run(Block *parentBlock) = 0;
@@ -85,17 +85,17 @@ public:
     virtual Var eval(Block *parentBlock) = 0;
 };
 
-class Block: public Operator
+class Block: public Statement
 {
 private:
-    std::list<Operator *> ops; // list of operators
+    std::list<Statement *> ops; // list of statements
     std::map<std::string, Var *> vars; // table of variables
     Block *parentBlock;
 
 public:
     Block();
 
-    Block(std::list<Operator *> ops);
+    Block(std::list<Statement *> ops);
 
     ~Block() override;
 
@@ -139,32 +139,32 @@ public:
     void changeReturnValue(Var resultVal);
 
     /**
-     * Is function leaved by return operator.
+     * Is function leaved by return statement.
      * @return True if #RESULT is already initialized, false otherwise.
      */
     bool isReturned();
 
     const std::map<std::string, Var *> &getVars() const;
 
-    const std::list<Operator *> &getOps() const;
+    const std::list<Statement *> &getOps() const;
 };
 
-class ExprOperator: public Operator
+class ExprStatement: public Statement
 {
 private:
     Expression *expr;
 
 public:
-    ExprOperator(Expression *expr);
+    ExprStatement(Expression *expr);
 
-    ~ExprOperator() override;
+    ~ExprStatement() override;
 
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock = nullptr) override;
 };
 
-class IfOperator: public Operator
+class IfStatement: public Statement
 {
 private:
     Expression *cond;
@@ -172,51 +172,51 @@ private:
     Block *elseBlock;
 
 public:
-    IfOperator(Expression *cond, Block *thenBlock, Block *elseBlock);
+    IfStatement(Expression *cond, Block *thenBlock, Block *elseBlock);
 
-    ~IfOperator() override;
+    ~IfStatement() override;
 
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock = nullptr) override;
 };
 
-class WhileOperator: public Operator
+class WhileStatement: public Statement
 {
 private:
     Expression *cond;
     Block *body;
 
 public:
-    WhileOperator(Expression *cond, Block *body);
+    WhileStatement(Expression *cond, Block *body);
 
-    ~WhileOperator() override;
+    ~WhileStatement() override;
 
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock = nullptr) override;
 };
 
-class ForOperator: public Operator
+class ForStatement: public Statement
 {
 private:
-    Operator *initOp;
+    Statement *initOp;
     Expression *cond;
-    Operator *stepOp;
+    Statement *stepOp;
     Block *body;
     Block *ownBlock; // this block contains local variables, created in for-loop
 
 public:
-    ForOperator(Operator *initOp, Expression *cond, Operator *stepOp, Block *body);
+    ForStatement(Statement *initOp, Expression *cond, Statement *stepOp, Block *body);
 
-    ~ForOperator() override;
+    ~ForStatement() override;
 
     void print(unsigned int indent) const override;
 
     void run(Block *parentBlock) override;
 };
 
-class AssignOperator: public Operator
+class AssignStatement: public Statement
 {
 private:
     std::string ID;
@@ -224,47 +224,47 @@ private:
     Expression *index; // only for array, such as 'a[5+7] = 2'
     bool isDereferecing; // false for "x = 15", true for "*p = 15"
 public:
-    AssignOperator(const std::string &ID, Expression *value, bool isDereferencing = false);
+    AssignStatement(const std::string &ID, Expression *value, bool isDereferencing = false);
 
-    AssignOperator(const std::string &ID, Expression *value, Expression *index);
+    AssignStatement(const std::string &ID, Expression *value, Expression *index);
 
-    ~AssignOperator() override;
+    ~AssignStatement() override;
 
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock) override;
 };
 
-class DefOperator: public Operator
+class DefStatement: public Statement
 {
 private:
     VType type;
     std::string ID;
     unsigned size;
     Expression *value;
-    AssignOperator *assignOp; // for assign during declaration, such as 'int x = 2'
+    AssignStatement *assignOp; // for assign during declaration, such as 'int x = 2'
 
 public:
-    DefOperator(VType T, const std::string &ID, Expression *value);
+    DefStatement(VType T, const std::string &ID, Expression *value);
 
-    DefOperator(VType T, const std::string &ID, const std::string &size, Expression *value);
+    DefStatement(VType T, const std::string &ID, const std::string &size, Expression *value);
 
-    ~DefOperator() override;
+    ~DefStatement() override;
 
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock) override;
 };
 
-class ReturnOperator: public Operator
+class ReturnStatement: public Statement
 {
 private:
     Expression *value;
 
 public:
-    ReturnOperator(Expression *value);
+    ReturnStatement(Expression *value);
 
-    ~ReturnOperator() override;
+    ~ReturnStatement() override;
 
     void print(unsigned int indent) const override;
 
@@ -357,7 +357,6 @@ class VarExpression: public Expression
 private:
     std::string ID;
 
-
 public:
     VarExpression(const std::string &ID);
 
@@ -407,7 +406,7 @@ private:
     Var result;
 
 public:
-    FunctionCall(const std::list<Operator *> &ops,
+    FunctionCall(const std::list<Statement *> &ops,
                  VType returnType,
                  const std::vector<Parameter *> &params,
                  const std::vector<Var> &args);
@@ -506,9 +505,9 @@ public:
 typedef struct
 {
     std::string str;
-    Operator *oper;
+    Statement *oper;
     Block *block;
-    std::list<Operator *> opers;
+    std::list<Statement *> opers;
     Expression *expr;
     std::vector<Expression *> args;
     Function *func;

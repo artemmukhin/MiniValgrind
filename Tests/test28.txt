@@ -1,7 +1,6 @@
 #begin
 
-// Merge sort
-// recursive merge sort doesn't work because MiniValgrind doesn't support call stack
+// Recursive merge sort
 
 global {
     arr A[8];
