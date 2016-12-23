@@ -7,4 +7,3 @@ parser:
 
 valg:
 	g++ -std=gnu++11 -Wno-write-strings Generated/lexer.cpp Generated/parser.cpp Src/Variable.cpp Src/Statements.cpp -o MiniValgrind -lm
-

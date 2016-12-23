@@ -87,15 +87,15 @@ public:
 
 class Block: public Statement
 {
-private:
-    std::list<Statement *> ops; // list of statements
+protected:
+    std::list<std::shared_ptr<Statement> > statements; // list of statements
     std::map<std::string, Var *> vars; // table of variables
     Block *parentBlock;
 
 public:
     Block();
 
-    Block(std::list<Statement *> ops);
+    Block(std::list<std::shared_ptr<Statement> > stats);
 
     ~Block() override;
 
@@ -145,8 +145,6 @@ public:
     bool isReturned();
 
     const std::map<std::string, Var *> &getVars() const;
-
-    const std::list<Statement *> &getOps() const;
 };
 
 class ExprStatement: public Statement
@@ -200,14 +198,17 @@ public:
 class ForStatement: public Statement
 {
 private:
-    Statement *initOp;
+    std::shared_ptr<Statement> initStat;
     Expression *cond;
-    Statement *stepOp;
+    std::shared_ptr<Statement> stepStat;
     Block *body;
     Block *ownBlock; // this block contains local variables, created in for-loop
 
 public:
-    ForStatement(Statement *initOp, Expression *cond, Statement *stepOp, Block *body);
+    ForStatement(std::shared_ptr<Statement> initStat,
+                 Expression *cond,
+                 std::shared_ptr<Statement> stepStat,
+                 Block *body);
 
     ~ForStatement() override;
 
@@ -242,7 +243,7 @@ private:
     std::string ID;
     unsigned size;
     Expression *value;
-    AssignStatement *assignOp; // for assign during declaration, such as 'int x = 2'
+    AssignStatement *assignStat; // for assign during declaration, such as 'int x = 2'
 
 public:
     DefStatement(VType T, const std::string &ID, Expression *value);
@@ -406,7 +407,7 @@ private:
     Var result;
 
 public:
-    FunctionCall(const std::list<Statement *> &ops,
+    FunctionCall(Block *block,
                  VType returnType,
                  const std::vector<Parameter *> &params,
                  const std::vector<Var> &args);
@@ -500,14 +501,14 @@ public:
 };
 
 /*
- * Struct for Bison-parser
+ * Struct for Bison parser
  */
 typedef struct
 {
     std::string str;
-    Statement *oper;
+    std::shared_ptr<Statement> statement;
     Block *block;
-    std::list<Statement *> opers;
+    std::list<std::shared_ptr<Statement> > statements;
     Expression *expr;
     std::vector<Expression *> args;
     Function *func;

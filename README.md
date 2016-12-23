@@ -31,7 +31,11 @@ Aborted.
 ## Testing
 You can run unit test:
 ```
-$ python Tests/RunTests.py
+$ python Tests/UnitTest.py
+```
+or memory test of MiniValgrind (requires original Valgrind)
+```
+$ python Test/MemoryTest.py
 ```
 
 ## MiniC overview

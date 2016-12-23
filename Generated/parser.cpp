@@ -466,8 +466,8 @@ static const char *const yytname[] =
   "NUM", "ID", "GLOBAL", "INT", "PTR", "ARR", "'('", "')'", "','", "'{'",
   "'}'", "';'", "'='", "'['", "']'", "'*'", "'>'", "'<'", "'+'", "'-'",
   "'%'", "'/'", "'!'", "'&'", "$accept", "PROGRAM", "GLOBALS", "FUNCS",
-  "FUNC", "PARAM", "PARAMS", "BLOCK", "OPS", "OP", "OP1", "EXPR", "EXPR2",
-  "TERM", "VAL", "ARGS", "ARG", YY_NULLPTR
+  "FUNC", "PARAM", "PARAMS", "BLOCK", "STATS", "STAT", "STAT1", "EXPR",
+  "EXPR2", "TERM", "VAL", "ARGS", "ARG", YY_NULLPTR
 };
 #endif
 
@@ -1359,23 +1359,23 @@ yyreduce:
         case 2:
 #line 44 "MiniC.y" /* yacc.c:1646  */
     {
-                                                Program& p = Program::Instance();
-                                                p.setGlobals((yyvsp[-2].globs));
-                                                p.setFuncs((yyvsp[-1].funcs));
-                                                p.run();
-                                                p.finalize();
-                                            }
+                                                    Program& p = Program::Instance();
+                                                    p.setGlobals((yyvsp[-2].globs));
+                                                    p.setFuncs((yyvsp[-1].funcs));
+                                                    p.run();
+                                                    p.finalize();
+                                                }
 #line 1369 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 3:
 #line 51 "MiniC.y" /* yacc.c:1646  */
     {
-                                                Program& p = Program::Instance();
-                                                p.setFuncs((yyvsp[-1].funcs));
-                                                p.run();
-                                                p.finalize();
-                                            }
+                                                    Program& p = Program::Instance();
+                                                    p.setFuncs((yyvsp[-1].funcs));
+                                                    p.run();
+                                                    p.finalize();
+                                                }
 #line 1380 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
@@ -1453,7 +1453,7 @@ yyreduce:
 
   case 16:
 #line 79 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.block) = new Block((yyvsp[-1].opers)); }
+    { (yyval.block) = new Block((yyvsp[-1].statements)); }
 #line 1458 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
@@ -1465,103 +1465,103 @@ yyreduce:
 
   case 18:
 #line 82 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.opers).clear(); (yyval.opers).push_back((yyvsp[0].oper)); }
+    { (yyval.statements).clear(); (yyval.statements).push_back((yyvsp[0].statement)); }
 #line 1470 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 19:
 #line 83 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.opers) = (yyvsp[-1].opers); (yyval.opers).push_back((yyvsp[0].oper)); }
+    { (yyval.statements) = (yyvsp[-1].statements); (yyval.statements).push_back((yyvsp[0].statement)); }
 #line 1476 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 20:
 #line 86 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = (yyval.oper); }
+    { (yyval.statement) = (yyval.statement); }
 #line 1482 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 21:
 #line 87 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new IfStatement((yyvsp[-4].expr), (yyvsp[-2].block), (yyvsp[0].block)); }
+    { (yyval.statement) = std::make_shared<IfStatement>((yyvsp[-4].expr), (yyvsp[-2].block), (yyvsp[0].block)); }
 #line 1488 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 22:
 #line 88 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new IfStatement((yyvsp[-2].expr), (yyvsp[0].block), nullptr); }
+    { (yyval.statement) = std::make_shared<IfStatement>((yyvsp[-2].expr), (yyvsp[0].block), nullptr); }
 #line 1494 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 23:
 #line 89 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new WhileStatement((yyvsp[-2].expr), (yyvsp[0].block)); }
+    { (yyval.statement) = std::make_shared<WhileStatement>((yyvsp[-2].expr), (yyvsp[0].block)); }
 #line 1500 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 24:
 #line 90 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new ForStatement((yyvsp[-5].oper), (yyvsp[-4].expr), (yyvsp[-2].oper), (yyvsp[0].block)); }
+    { (yyval.statement) = std::make_shared<ForStatement>((yyvsp[-5].statement), (yyvsp[-4].expr), (yyvsp[-2].statement), (yyvsp[0].block)); }
 #line 1506 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 25:
 #line 91 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new ReturnStatement((yyvsp[-1].expr)); }
+    { (yyval.statement) = std::make_shared<ReturnStatement>((yyvsp[-1].expr)); }
 #line 1512 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 26:
 #line 94 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefStatement(T_INT, (yyvsp[-1].str), nullptr); }
+    { (yyval.statement) = std::make_shared<DefStatement>(T_INT, (yyvsp[-1].str), nullptr); }
 #line 1518 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 27:
 #line 95 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefStatement(T_INT, (yyvsp[-3].str), (yyvsp[-1].expr)); }
+    { (yyval.statement) = std::make_shared<DefStatement>(T_INT, (yyvsp[-3].str), (yyvsp[-1].expr)); }
 #line 1524 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 28:
 #line 96 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefStatement(T_PTR, (yyvsp[-1].str), nullptr); }
+    { (yyval.statement) = std::make_shared<DefStatement>(T_PTR, (yyvsp[-1].str), nullptr); }
 #line 1530 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 29:
 #line 97 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefStatement(T_PTR, (yyvsp[-3].str), (yyvsp[-1].expr)); }
+    { (yyval.statement) = std::make_shared<DefStatement>(T_PTR, (yyvsp[-3].str), (yyvsp[-1].expr)); }
 #line 1536 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 30:
 #line 98 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new DefStatement(T_ARR, (yyvsp[-4].str), (yyvsp[-2].str), nullptr); }
+    { (yyval.statement) = std::make_shared<DefStatement>(T_ARR, (yyvsp[-4].str), (yyvsp[-2].str), nullptr); }
 #line 1542 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 31:
 #line 99 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new AssignStatement((yyvsp[-3].str), (yyvsp[-1].expr)); }
+    { (yyval.statement) = std::make_shared<AssignStatement>((yyvsp[-3].str), (yyvsp[-1].expr)); }
 #line 1548 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 32:
 #line 100 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new AssignStatement((yyvsp[-3].str), (yyvsp[-1].expr), true); }
+    { (yyval.statement) = std::make_shared<AssignStatement>((yyvsp[-3].str), (yyvsp[-1].expr), true); }
 #line 1554 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 33:
 #line 101 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new AssignStatement((yyvsp[-6].str), (yyvsp[-1].expr), (yyvsp[-4].expr)); }
+    { (yyval.statement) = std::make_shared<AssignStatement>((yyvsp[-6].str), (yyvsp[-1].expr), (yyvsp[-4].expr)); }
 #line 1560 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 34:
 #line 102 "MiniC.y" /* yacc.c:1646  */
-    { (yyval.oper) = new ExprStatement((yyvsp[-1].expr)); }
+    { (yyval.statement) = std::make_shared<ExprStatement>((yyvsp[-1].expr)); }
 #line 1566 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 

@@ -58,28 +58,28 @@ Block::Block()
     : parentBlock(nullptr)
 {}
 
-Block::Block(std::list<Statement *> ops)
-    : ops(ops), parentBlock(nullptr)
+Block::Block(std::list<std::shared_ptr<Statement> > stats)
+    : statements(stats), parentBlock(nullptr)
 {}
 
 Block::~Block()
 {
-    for (auto op : ops)
-        delete op;
+    for (auto st : statements)
+        st.reset();
     clearVarTable();
 }
 
 Block::Block(const Block &other)
 {
-    ops = other.ops;
+    statements = other.statements;
     parentBlock = other.parentBlock;
 }
 
 void Block::print(unsigned indent) const
 {
     std::cout << indentation(indent) << "{" << std::endl;
-    for (auto op : ops)
-        op->print(indent + 1);
+    for (auto stat : statements)
+        stat->print(indent + 1);
     std::cout << indentation(indent) << "}" << std::endl;
 }
 
@@ -87,9 +87,9 @@ void Block::run(Block *parentBlock)
 {
     this->parentBlock = parentBlock;
     // run each statement, and output exception if there is one
-    for (auto op : ops) {
+    for (auto stat : statements) {
         try {
-            op->run(this);
+            stat->run(this);
         }
         catch (const std::exception &ex) {
             std::cout << "Error:    " << ex.what() << std::endl;
@@ -109,7 +109,7 @@ void Block::run(Block *parentBlock)
 
 size_t Block::size() const
 {
-    return ops.size();
+    return statements.size();
 }
 
 Var *Block::findVar(const std::string &id)
@@ -192,10 +192,6 @@ const std::map<std::string, Var *> &Block::getVars() const
     return vars;
 }
 
-const std::list<Statement *> &Block::getOps() const
-{
-    return ops;
-}
 
 ExprStatement::ExprStatement(Expression *expr)
     : expr(expr)
@@ -286,14 +282,18 @@ void WhileStatement::run(Block *parentBlock)
     }
 }
 
-ForStatement::ForStatement(Statement *initOp, Expression *cond, Statement *stepOp, Block *body)
-    : initOp(initOp), cond(cond), stepOp(stepOp), body(body), ownBlock(new Block(std::list<Statement *>(1, initOp)))
+ForStatement::ForStatement(std::shared_ptr<Statement> initStat,
+                           Expression *cond,
+                           std::shared_ptr<Statement> stepStat,
+                           Block *body)
+    : initStat(initStat), cond(cond), stepStat(stepStat), body(body),
+      ownBlock(new Block(std::list<std::shared_ptr<Statement> >(1, initStat)))
 {}
 
 ForStatement::~ForStatement()
 {
     delete cond;
-    delete stepOp;
+    stepStat.reset();
     delete ownBlock;
     delete body;
 }
@@ -302,11 +302,11 @@ void ForStatement::print(unsigned int indent) const
 {
     std::cout << indentation(indent) << "for ";
     std::cout << "(";
-    initOp->print();
+    initStat->print();
     std::cout << "; ";
     cond->print();
     std::cout << "; ";
-    stepOp->print();
+    stepStat->print();
     std::cout << ")";
     std::cout << std::endl;
     body->print(indent);
@@ -319,7 +319,7 @@ void ForStatement::run(Block *parentBlock)
     while (condResult == 1) {
         body->run(ownBlock);
         body->clearVarTable();
-        stepOp->run(ownBlock);
+        stepStat->run(ownBlock);
         condResult = cond->eval(ownBlock).getIntVal();
     }
     ownBlock->clearVarTable();
@@ -401,23 +401,23 @@ DefStatement::DefStatement(VType T, const std::string &ID, Expression *value)
     : type(T), ID(ID), size(0), value(value)
 {
     if (value)
-        assignOp = new AssignStatement(ID, value);
+        assignStat = new AssignStatement(ID, value);
     else
-        assignOp = nullptr;
+        assignStat = nullptr;
 }
 
 DefStatement::DefStatement(VType T, const std::string &ID, const std::string &size, Expression *value)
     : type(T), ID(ID), size((unsigned) stoi(size)), value(value)
 {
     if (value)
-        assignOp = new AssignStatement(ID, value);
+        assignStat = new AssignStatement(ID, value);
     else
-        assignOp = nullptr;
+        assignStat = nullptr;
 }
 
 DefStatement::~DefStatement()
 {
-    delete assignOp;
+    delete assignStat;
 }
 
 void DefStatement::print(unsigned indent) const
@@ -444,7 +444,7 @@ void DefStatement::run(Block *parentBlock)
         Var *newVar = new Var(type);
         parentBlock->addVar(ID, newVar);
         if (value)
-            assignOp->run(parentBlock);
+            assignStat->run(parentBlock);
     }
 }
 
@@ -793,7 +793,7 @@ Var Function::eval(const std::vector<Var> &args, Block *globalBlock)
             throw InvalidFunctionCall("invalid parameter's type (" + VTypeToString(args[i].getType()) +
                 "instead of " + VTypeToString(params[i]->getParamType()) + ")");
     }
-    FunctionCall newCall(body->getOps(), returnType, params, args);
+    FunctionCall newCall(body, returnType, params, args);
     return newCall.execute(globalBlock);
 }
 
@@ -802,12 +802,12 @@ const std::string &Function::getID() const
     return id;
 }
 
-FunctionCall::FunctionCall(const std::list<Statement *> &ops,
+FunctionCall::FunctionCall(Block *oldBody,
                            VType returnType,
                            const std::vector<Parameter *> &params,
                            const std::vector<Var> &args)
 {
-    body = new Block(ops);
+    body = new Block(*oldBody);
     body->addVar("#RESULT", new Var(returnType));
     for (size_t i = 0; i < args.size(); i++)
         body->addVar(params[i]->getID(), new Var(args[i]));
@@ -815,12 +815,7 @@ FunctionCall::FunctionCall(const std::list<Statement *> &ops,
 
 FunctionCall::~FunctionCall()
 {
-    // don't delete body completely, because body->ops will be delete in ~Function()
-    // actually there is a small memory leak, to do
-    //
-    // probable solution:
-    // add method clone() to Block, which will calls methods clone() of each Statement in ops...
-    body->clearVarTable();
+    delete body;
 }
 
 Var FunctionCall::execute(Block *globalBlock)
