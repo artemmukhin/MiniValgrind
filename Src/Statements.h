@@ -380,7 +380,9 @@ public:
 
     Globals(Block *globalsBlock);
 
-    void addToBlock(Block *block);
+    ~Globals();
+
+    Block *getGlobalBlock();
 };
 
 // parameters of a function

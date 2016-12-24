@@ -10,7 +10,13 @@ for i in range(1, NumberOfTests + 1):
                     stdin=inp, stdout=sproc.PIPE, stderr=sproc.PIPE)
     valgOut, valgErr = p.communicate()
 
-    errorSummary = valgErr[valgErr.find("ERROR SUMMARY") : valgErr[valgErr.find("ERROR SUMMARY"):].find("==")]
+    leakSummary = valgErr[valgErr.find("definitely lost") : ]
+    leakSummary = leakSummary[ : leakSummary.find("==") - 1]
+    
+    errorSummary = valgErr[valgErr.find("ERROR SUMMARY") : ]
+    errorSummary = errorSummary[ : errorSummary.find(" (suppressed")]
+    
     print("Test #" + str(i))
+    print(leakSummary)
     print(errorSummary)
     print

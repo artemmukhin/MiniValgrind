@@ -446,13 +446,13 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    44,    44,    51,    59,    61,    62,    65,    66,    67,
-      70,    71,    72,    75,    76,    77,    79,    80,    82,    83,
-      86,    87,    88,    89,    90,    91,    94,    95,    96,    97,
-      98,    99,   100,   101,   102,   105,   106,   107,   108,   109,
-     110,   111,   112,   113,   116,   117,   118,   119,   122,   123,
-     124,   127,   128,   129,   130,   131,   132,   133,   134,   135,
-     136,   137,   138,   139,   142,   143,   144,   147
+       0,    44,    44,    52,    60,    62,    63,    66,    67,    68,
+      71,    72,    73,    76,    77,    78,    80,    81,    83,    84,
+      87,    88,    89,    90,    91,    92,    95,    96,    97,    98,
+      99,   100,   101,   102,   103,   106,   107,   108,   109,   110,
+     111,   112,   113,   114,   117,   118,   119,   120,   123,   124,
+     125,   128,   129,   130,   131,   132,   133,   134,   135,   136,
+     137,   138,   139,   140,   143,   144,   145,   148
 };
 #endif
 
@@ -1364,383 +1364,384 @@ yyreduce:
                                                     p.setFuncs((yyvsp[-1].funcs));
                                                     p.run();
                                                     p.finalize();
+                                                    delete (yyvsp[-2].globs);
                                                 }
-#line 1369 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1370 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 51 "MiniC.y" /* yacc.c:1646  */
+#line 52 "MiniC.y" /* yacc.c:1646  */
     {
                                                     Program& p = Program::Instance();
                                                     p.setFuncs((yyvsp[-1].funcs));
                                                     p.run();
                                                     p.finalize();
                                                 }
-#line 1380 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1381 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 59 "MiniC.y" /* yacc.c:1646  */
+#line 60 "MiniC.y" /* yacc.c:1646  */
     { (yyval.globs) = new Globals((yyvsp[0].block)); }
-#line 1386 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1387 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 61 "MiniC.y" /* yacc.c:1646  */
+#line 62 "MiniC.y" /* yacc.c:1646  */
     { (yyval.funcs).clear(); (yyval.funcs).push_back((yyvsp[0].func)); }
-#line 1392 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1393 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 62 "MiniC.y" /* yacc.c:1646  */
+#line 63 "MiniC.y" /* yacc.c:1646  */
     { (yyval.funcs) = (yyvsp[-1].funcs); (yyval.funcs).push_back((yyvsp[0].func)); }
-#line 1398 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1399 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 65 "MiniC.y" /* yacc.c:1646  */
+#line 66 "MiniC.y" /* yacc.c:1646  */
     { (yyval.func) = new Function((yyvsp[-4].str), T_INT, (yyvsp[-2].params), (yyvsp[0].block)); }
-#line 1404 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1405 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 66 "MiniC.y" /* yacc.c:1646  */
+#line 67 "MiniC.y" /* yacc.c:1646  */
     { (yyval.func) = new Function((yyvsp[-4].str), T_PTR, (yyvsp[-2].params), (yyvsp[0].block)); }
-#line 1410 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1411 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 67 "MiniC.y" /* yacc.c:1646  */
+#line 68 "MiniC.y" /* yacc.c:1646  */
     { (yyval.func) = new Function((yyvsp[-4].str), T_ARR, (yyvsp[-2].params), (yyvsp[0].block)); }
-#line 1416 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1417 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 70 "MiniC.y" /* yacc.c:1646  */
+#line 71 "MiniC.y" /* yacc.c:1646  */
     { (yyval.param) = new Parameter(T_INT, (yyvsp[0].str)); }
-#line 1422 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1423 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 71 "MiniC.y" /* yacc.c:1646  */
+#line 72 "MiniC.y" /* yacc.c:1646  */
     { (yyval.param) = new Parameter(T_PTR, (yyvsp[0].str)); }
-#line 1428 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1429 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 72 "MiniC.y" /* yacc.c:1646  */
+#line 73 "MiniC.y" /* yacc.c:1646  */
     { (yyval.param) = new Parameter(T_ARR, (yyvsp[0].str)); }
-#line 1434 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1435 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 75 "MiniC.y" /* yacc.c:1646  */
+#line 76 "MiniC.y" /* yacc.c:1646  */
     { (yyval.params).clear(); }
-#line 1440 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1441 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 76 "MiniC.y" /* yacc.c:1646  */
+#line 77 "MiniC.y" /* yacc.c:1646  */
     { (yyval.params).clear(); (yyval.params).push_back((yyvsp[0].param)); }
-#line 1446 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1447 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 77 "MiniC.y" /* yacc.c:1646  */
+#line 78 "MiniC.y" /* yacc.c:1646  */
     { (yyval.params) = (yyvsp[-2].params); (yyval.params).push_back((yyvsp[0].param)); }
-#line 1452 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1453 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 79 "MiniC.y" /* yacc.c:1646  */
+#line 80 "MiniC.y" /* yacc.c:1646  */
     { (yyval.block) = new Block((yyvsp[-1].statements)); }
-#line 1458 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1459 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 80 "MiniC.y" /* yacc.c:1646  */
+#line 81 "MiniC.y" /* yacc.c:1646  */
     { (yyval.block) = new Block(); }
-#line 1464 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1465 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 82 "MiniC.y" /* yacc.c:1646  */
+#line 83 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statements).clear(); (yyval.statements).push_back((yyvsp[0].statement)); }
-#line 1470 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1471 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 83 "MiniC.y" /* yacc.c:1646  */
+#line 84 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statements) = (yyvsp[-1].statements); (yyval.statements).push_back((yyvsp[0].statement)); }
-#line 1476 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1477 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 86 "MiniC.y" /* yacc.c:1646  */
+#line 87 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = (yyval.statement); }
-#line 1482 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1483 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 87 "MiniC.y" /* yacc.c:1646  */
+#line 88 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<IfStatement>((yyvsp[-4].expr), (yyvsp[-2].block), (yyvsp[0].block)); }
-#line 1488 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1489 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 88 "MiniC.y" /* yacc.c:1646  */
+#line 89 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<IfStatement>((yyvsp[-2].expr), (yyvsp[0].block), nullptr); }
-#line 1494 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1495 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 89 "MiniC.y" /* yacc.c:1646  */
+#line 90 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<WhileStatement>((yyvsp[-2].expr), (yyvsp[0].block)); }
-#line 1500 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1501 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 90 "MiniC.y" /* yacc.c:1646  */
+#line 91 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<ForStatement>((yyvsp[-5].statement), (yyvsp[-4].expr), (yyvsp[-2].statement), (yyvsp[0].block)); }
-#line 1506 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1507 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 91 "MiniC.y" /* yacc.c:1646  */
+#line 92 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<ReturnStatement>((yyvsp[-1].expr)); }
-#line 1512 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1513 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 94 "MiniC.y" /* yacc.c:1646  */
+#line 95 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<DefStatement>(T_INT, (yyvsp[-1].str), nullptr); }
-#line 1518 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1519 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 95 "MiniC.y" /* yacc.c:1646  */
+#line 96 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<DefStatement>(T_INT, (yyvsp[-3].str), (yyvsp[-1].expr)); }
-#line 1524 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1525 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 96 "MiniC.y" /* yacc.c:1646  */
+#line 97 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<DefStatement>(T_PTR, (yyvsp[-1].str), nullptr); }
-#line 1530 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1531 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 97 "MiniC.y" /* yacc.c:1646  */
+#line 98 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<DefStatement>(T_PTR, (yyvsp[-3].str), (yyvsp[-1].expr)); }
-#line 1536 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1537 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 98 "MiniC.y" /* yacc.c:1646  */
+#line 99 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<DefStatement>(T_ARR, (yyvsp[-4].str), (yyvsp[-2].str), nullptr); }
-#line 1542 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1543 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 99 "MiniC.y" /* yacc.c:1646  */
+#line 100 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<AssignStatement>((yyvsp[-3].str), (yyvsp[-1].expr)); }
-#line 1548 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1549 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 100 "MiniC.y" /* yacc.c:1646  */
+#line 101 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<AssignStatement>((yyvsp[-3].str), (yyvsp[-1].expr), true); }
-#line 1554 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1555 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 101 "MiniC.y" /* yacc.c:1646  */
+#line 102 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<AssignStatement>((yyvsp[-6].str), (yyvsp[-1].expr), (yyvsp[-4].expr)); }
-#line 1560 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1561 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 102 "MiniC.y" /* yacc.c:1646  */
+#line 103 "MiniC.y" /* yacc.c:1646  */
     { (yyval.statement) = std::make_shared<ExprStatement>((yyvsp[-1].expr)); }
-#line 1566 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1567 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 106 "MiniC.y" /* yacc.c:1646  */
+#line 107 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("==", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1572 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1573 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 107 "MiniC.y" /* yacc.c:1646  */
+#line 108 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("<=", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1578 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1579 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 108 "MiniC.y" /* yacc.c:1646  */
+#line 109 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression(">=", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1584 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1585 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 109 "MiniC.y" /* yacc.c:1646  */
+#line 110 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("!=", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1590 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1591 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 110 "MiniC.y" /* yacc.c:1646  */
+#line 111 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression(">", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1596 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1597 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 111 "MiniC.y" /* yacc.c:1646  */
+#line 112 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("<", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1602 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1603 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 112 "MiniC.y" /* yacc.c:1646  */
+#line 113 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("&&", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1608 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1609 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 113 "MiniC.y" /* yacc.c:1646  */
+#line 114 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("||", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1614 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1615 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 117 "MiniC.y" /* yacc.c:1646  */
+#line 118 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("+", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1620 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1621 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 118 "MiniC.y" /* yacc.c:1646  */
+#line 119 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("-", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1626 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1627 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 119 "MiniC.y" /* yacc.c:1646  */
+#line 120 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("%", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1632 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1633 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 123 "MiniC.y" /* yacc.c:1646  */
+#line 124 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("*", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1638 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1639 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 124 "MiniC.y" /* yacc.c:1646  */
+#line 125 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new BinaryExpression("/", (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1644 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1645 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 127 "MiniC.y" /* yacc.c:1646  */
+#line 128 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new ValueExpression((yyvsp[0].str)); }
-#line 1650 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1651 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 128 "MiniC.y" /* yacc.c:1646  */
+#line 129 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression("-", (yyvsp[0].expr)); }
-#line 1656 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1657 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 129 "MiniC.y" /* yacc.c:1646  */
+#line 130 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression("!", (yyvsp[0].expr)); }
-#line 1662 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1663 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 130 "MiniC.y" /* yacc.c:1646  */
+#line 131 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression(".++", (yyvsp[-1].expr)); }
-#line 1668 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1669 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 131 "MiniC.y" /* yacc.c:1646  */
+#line 132 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression(".--", (yyvsp[-1].expr)); }
-#line 1674 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1675 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 132 "MiniC.y" /* yacc.c:1646  */
+#line 133 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression("++.", (yyvsp[0].expr)); }
-#line 1680 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1681 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 133 "MiniC.y" /* yacc.c:1646  */
+#line 134 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression("--.", (yyvsp[0].expr)); }
-#line 1686 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1687 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 134 "MiniC.y" /* yacc.c:1646  */
+#line 135 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = (yyvsp[-1].expr); }
-#line 1692 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1693 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 135 "MiniC.y" /* yacc.c:1646  */
+#line 136 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new VarExpression((yyvsp[0].str)); }
-#line 1698 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1699 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 136 "MiniC.y" /* yacc.c:1646  */
+#line 137 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new FunCallExpression((yyvsp[-3].str), (yyvsp[-1].args)); }
-#line 1704 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1705 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 137 "MiniC.y" /* yacc.c:1646  */
+#line 138 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression("&", (yyvsp[0].expr)); }
-#line 1710 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1711 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 138 "MiniC.y" /* yacc.c:1646  */
+#line 139 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new UnaryExpression("*", (yyvsp[0].expr)); }
-#line 1716 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1717 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 139 "MiniC.y" /* yacc.c:1646  */
+#line 140 "MiniC.y" /* yacc.c:1646  */
     { (yyval.expr) = new ArrayAtExpression((yyvsp[-3].str), (yyvsp[-1].expr)); }
-#line 1722 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1723 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 142 "MiniC.y" /* yacc.c:1646  */
+#line 143 "MiniC.y" /* yacc.c:1646  */
     { (yyval.args).clear(); }
-#line 1728 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1729 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 143 "MiniC.y" /* yacc.c:1646  */
+#line 144 "MiniC.y" /* yacc.c:1646  */
     { (yyval.args).clear(); (yyval.args).push_back((yyvsp[0].expr)); }
-#line 1734 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1735 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 144 "MiniC.y" /* yacc.c:1646  */
+#line 145 "MiniC.y" /* yacc.c:1646  */
     { (yyval.args) = (yyvsp[-2].args); (yyval.args).push_back((yyvsp[0].expr)); }
-#line 1740 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1741 "Generated/parser.cpp" /* yacc.c:1646  */
     break;
 
 
-#line 1744 "Generated/parser.cpp" /* yacc.c:1646  */
+#line 1745 "Generated/parser.cpp" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1968,7 +1969,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 151 "MiniC.y" /* yacc.c:1906  */
+#line 152 "MiniC.y" /* yacc.c:1906  */
 
 int main() { return yyparse(); }
 

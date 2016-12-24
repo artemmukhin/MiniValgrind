@@ -192,7 +192,6 @@ const std::map<std::string, Var *> &Block::getVars() const
     return vars;
 }
 
-
 ExprStatement::ExprStatement(Expression *expr)
     : expr(expr)
 {}
@@ -395,7 +394,6 @@ void AssignStatement::run(Block *parentBlock)
             break;
     }
 }
-
 
 DefStatement::DefStatement(VType T, const std::string &ID, Expression *value)
     : type(T), ID(ID), size(0), value(value)
@@ -743,12 +741,19 @@ Globals::Globals(Block *globalsBlock)
     : globalsBlock(globalsBlock)
 {}
 
-void Globals::addToBlock(Block *block)
+Globals::~Globals()
 {
+    delete globalsBlock;
+}
+
+Block *Globals::getGlobalBlock()
+{
+    Block *globalBlock = new Block();
     globalsBlock->run(nullptr);
     auto globalVars = globalsBlock->getVars();
     for (auto var : globalVars)
-        block->addVar(var.first, var.second);
+        globalBlock->addVar(var.first, new Var(*var.second));
+    return globalBlock;
 }
 
 Parameter::Parameter(VType paramType, const std::string &id)
@@ -837,8 +842,7 @@ void Program::setFuncs(std::list<Function *> f)
 
 void Program::setGlobals(Globals *globs)
 {
-    globalBlock = new Block();
-    globs->addToBlock(globalBlock);
+    globalBlock = globs->getGlobalBlock();
 }
 
 void Program::finalize()

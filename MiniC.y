@@ -47,6 +47,7 @@ PROGRAM: P_BEGIN GLOBALS FUNCS P_END            {
                                                     p.setFuncs($3);
                                                     p.run();
                                                     p.finalize();
+                                                    delete $2;
                                                 }
 |        P_BEGIN FUNCS P_END                    {
                                                     Program& p = Program::Instance();
