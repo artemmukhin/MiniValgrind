@@ -61,6 +61,12 @@ public:
      * @param parentBlock - Block inside which this block is located.
     */
     virtual void run(Block *parentBlock) = 0;
+
+    /**
+     * Copy of statement
+     * @return copy of statement
+    */
+    virtual Statement *copy() const = 0;
 };
 
 class Expression
@@ -83,23 +89,32 @@ public:
      * @return Result variable.
     */
     virtual Var eval(Block *parentBlock) = 0;
+
+
+    /**
+     * Copy of expression
+     * @return copy of expression
+    */
+    virtual Expression *copy() const = 0;
 };
 
 class Block: public Statement
 {
 protected:
-    std::list<std::shared_ptr<Statement> > statements; // list of statements
+    std::list<Statement *> statements; // list of statements
     std::map<std::string, Var *> vars; // table of variables
     Block *parentBlock;
 
 public:
     Block();
 
-    Block(std::list<std::shared_ptr<Statement> > stats);
+    Block(std::list<Statement *> stats, Block *parent = nullptr);
 
     ~Block() override;
 
-    Block(const Block &other);
+    //Block(const Block &other);
+
+    Block *copy() const override;
 
     void print(unsigned indent = 0) const override;
 
@@ -157,6 +172,8 @@ public:
 
     ~ExprStatement() override;
 
+    ExprStatement *copy() const override;
+
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock = nullptr) override;
@@ -174,6 +191,8 @@ public:
 
     ~IfStatement() override;
 
+    IfStatement *copy() const override;
+
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock = nullptr) override;
@@ -190,6 +209,8 @@ public:
 
     ~WhileStatement() override;
 
+    WhileStatement *copy() const override;
+
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock = nullptr) override;
@@ -198,19 +219,21 @@ public:
 class ForStatement: public Statement
 {
 private:
-    std::shared_ptr<Statement> initStat;
+    Statement *initStat;
     Expression *cond;
-    std::shared_ptr<Statement> stepStat;
+    Statement *stepStat;
     Block *body;
     Block *ownBlock; // this block contains local variables, created in for-loop
 
 public:
-    ForStatement(std::shared_ptr<Statement> initStat,
+    ForStatement(Statement *initStat,
                  Expression *cond,
-                 std::shared_ptr<Statement> stepStat,
+                 Statement *stepStat,
                  Block *body);
 
     ~ForStatement() override;
+
+    ForStatement *copy() const override;
 
     void print(unsigned int indent) const override;
 
@@ -230,6 +253,8 @@ public:
     AssignStatement(const std::string &ID, Expression *value, Expression *index);
 
     ~AssignStatement() override;
+
+    AssignStatement *copy() const override;
 
     void print(unsigned indent = 0) const override;
 
@@ -252,6 +277,8 @@ public:
 
     ~DefStatement() override;
 
+    DefStatement *copy() const override;
+
     void print(unsigned indent = 0) const override;
 
     void run(Block *parentBlock) override;
@@ -266,6 +293,8 @@ public:
     ReturnStatement(Expression *value);
 
     ~ReturnStatement() override;
+
+    ReturnStatement *copy() const override;
 
     void print(unsigned int indent) const override;
 
@@ -283,9 +312,11 @@ public:
 
     ~FunCallExpression() override;
 
+    FunCallExpression *copy() const override;
+
     void print() const override;
 
-    Var eval(Block *parentBlock = nullptr) override;
+    Var eval(Block *parentBlock) override;
 
     const std::string &getID() const;
 };
@@ -300,6 +331,8 @@ public:
     UnaryExpression(const char *op, Expression *arg);
 
     ~UnaryExpression() override;
+
+    UnaryExpression *copy() const override;
 
     void print() const override;
 
@@ -317,6 +350,8 @@ public:
 
     ~BinaryExpression() override;
 
+    BinaryExpression *copy() const override;
+
     void print() const override;
 
     Var eval(Block *parentBlock) override;
@@ -333,6 +368,8 @@ public:
 
     ~ArrayAtExpression() override;
 
+    ArrayAtExpression *copy() const override;
+
     void print() const override;
 
     Var eval(Block *parentBlock) override;
@@ -348,6 +385,8 @@ public:
 
     ~ValueExpression() override;
 
+    ValueExpression *copy() const override;
+
     void print() const override;
 
     Var eval(Block *parentBlock) override;
@@ -362,6 +401,8 @@ public:
     VarExpression(const std::string &ID);
 
     ~VarExpression() override;
+
+    VarExpression *copy() const override;
 
     void print() const override;
 
@@ -508,9 +549,9 @@ public:
 typedef struct
 {
     std::string str;
-    std::shared_ptr<Statement> statement;
+    Statement *statement;
     Block *block;
-    std::list<std::shared_ptr<Statement> > statements;
+    std::list<Statement *> statements;
     Expression *expr;
     std::vector<Expression *> args;
     Function *func;

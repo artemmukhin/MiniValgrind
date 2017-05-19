@@ -10,13 +10,6 @@ global {
     arr B[8];
 }
 
-int min(int x, int y) {
-    if (x > y) {
-        return y;
-    }
-    return x;
-}
-
 int merging(int low, int mid, int high) {
    int l1 = low;
    int l2 = mid + 1;
@@ -43,24 +36,22 @@ int merging(int low, int mid, int high) {
    }
 }
 
-int mergeSort(int n) {
-   int curr_size;
-   int left_start;
-   for (curr_size = 1; curr_size <= n-1; curr_size = 2 * curr_size;) {
-       for (left_start = 0; left_start < n-1; left_start = left_start + 2 * curr_size;) {
-           int mid = left_start + curr_size - 1;
-           int right_end = min(left_start + 2*curr_size - 1, n-1);
-           merging(left_start, mid, right_end);
-       }
+int sort(int low, int high) {
+   int mid;
+   if (low < high) {
+      mid = (low + high) / 2;
+      sort(low, mid);
+      sort(mid + 1, high);
+      merging(low, mid, high);
    }
 }
 
-
 int main() {
-    int size = 8;
-    mergeSort(size);
     print(A);
+    sort(0, 7);
+    print(B);
     return 0;
 }
+
 // answer: [1, 3, 5, 6, 7, 10, 15, 22]
 #end

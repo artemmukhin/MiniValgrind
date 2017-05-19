@@ -58,21 +58,25 @@ Block::Block()
     : parentBlock(nullptr)
 {}
 
-Block::Block(std::list<std::shared_ptr<Statement> > stats)
-    : statements(stats), parentBlock(nullptr)
+Block::Block(std::list<Statement *> stats, Block *parent)
+    : statements(stats), parentBlock(parent)
 {}
 
 Block::~Block()
 {
     for (auto st : statements)
-        st.reset();
+        delete st;
     clearVarTable();
 }
 
-Block::Block(const Block &other)
+Block *Block::copy() const
 {
-    statements = other.statements;
-    parentBlock = other.parentBlock;
+    std::list<Statement *> statementsCopy;
+    for (auto statement : statements) {
+        statementsCopy.push_back(statement->copy());
+    }
+
+    return new Block(statementsCopy, parentBlock);
 }
 
 void Block::print(unsigned indent) const
@@ -135,7 +139,7 @@ void Block::addVar(const std::string &id, Var *newVar)
         vars.insert(std::pair<std::string, Var *>(id, newVar));
     else {
         delete newVar;
-        throw UndefinedVarException("Variable " + id + "is already exists");
+        throw UndefinedVarException("Variable " + id + " already exists");
     }
 }
 
@@ -192,6 +196,7 @@ const std::map<std::string, Var *> &Block::getVars() const
     return vars;
 }
 
+
 ExprStatement::ExprStatement(Expression *expr)
     : expr(expr)
 {}
@@ -208,11 +213,17 @@ ExprStatement::~ExprStatement()
     delete expr;
 }
 
+ExprStatement *ExprStatement::copy() const
+{
+    return new ExprStatement(expr->copy());
+}
+
 void ExprStatement::run(Block *parentBlock)
 {
     expr->eval(parentBlock);
     // do nothing
 }
+
 
 IfStatement::IfStatement(Expression *cond, Block *thenBlock, Block *elseBlock)
     : cond(cond), thenBlock(thenBlock), elseBlock(elseBlock)
@@ -238,6 +249,11 @@ IfStatement::~IfStatement()
     delete elseBlock;
 }
 
+IfStatement *IfStatement::copy() const
+{
+    return new IfStatement(cond->copy(), thenBlock->copy(), elseBlock ? elseBlock->copy() : nullptr);
+}
+
 void IfStatement::run(Block *parentBlock)
 {
     int condResult = cond->eval(parentBlock).getIntVal();
@@ -252,6 +268,7 @@ void IfStatement::run(Block *parentBlock)
         }
     }
 }
+
 
 WhileStatement::WhileStatement(Expression *cond, Block *body)
     : cond(cond), body(body)
@@ -271,6 +288,11 @@ WhileStatement::~WhileStatement()
     delete body;
 }
 
+WhileStatement *WhileStatement::copy() const
+{
+    return new WhileStatement(cond->copy(), body->copy());
+}
+
 void WhileStatement::run(Block *parentBlock)
 {
     int condResult = cond->eval(parentBlock).getIntVal();
@@ -281,20 +303,26 @@ void WhileStatement::run(Block *parentBlock)
     }
 }
 
-ForStatement::ForStatement(std::shared_ptr<Statement> initStat,
+
+ForStatement::ForStatement(Statement *initStat,
                            Expression *cond,
-                           std::shared_ptr<Statement> stepStat,
+                           Statement *stepStat,
                            Block *body)
     : initStat(initStat), cond(cond), stepStat(stepStat), body(body),
-      ownBlock(new Block(std::list<std::shared_ptr<Statement> >(1, initStat)))
+      ownBlock(new Block(std::list<Statement *>(1, initStat)))
 {}
 
 ForStatement::~ForStatement()
 {
     delete cond;
-    stepStat.reset();
+    delete stepStat;
     delete ownBlock;
     delete body;
+}
+
+ForStatement *ForStatement::copy() const
+{
+    return new ForStatement(initStat->copy(), cond->copy(), stepStat->copy(), body->copy());
 }
 
 void ForStatement::print(unsigned int indent) const
@@ -323,6 +351,7 @@ void ForStatement::run(Block *parentBlock)
     }
     ownBlock->clearVarTable();
 }
+
 
 AssignStatement::AssignStatement(const std::string &ID, Expression *value, bool isDereferecing)
     : ID(ID), value(value), index(nullptr), isDereferecing(isDereferecing)
@@ -394,6 +423,13 @@ void AssignStatement::run(Block *parentBlock)
             break;
     }
 }
+AssignStatement *AssignStatement::copy() const
+{
+    if (index)
+        return new AssignStatement(std::string(ID), value->copy(), index->copy());
+    else
+        return new AssignStatement(std::string(ID), value->copy(), isDereferecing);
+}
 
 DefStatement::DefStatement(VType T, const std::string &ID, Expression *value)
     : type(T), ID(ID), size(0), value(value)
@@ -416,6 +452,11 @@ DefStatement::DefStatement(VType T, const std::string &ID, const std::string &si
 DefStatement::~DefStatement()
 {
     delete assignStat;
+}
+
+DefStatement *DefStatement::copy() const
+{
+    return new DefStatement(type, std::string(ID), std::to_string(size), value ? value->copy() : nullptr);
 }
 
 void DefStatement::print(unsigned indent) const
@@ -446,6 +487,7 @@ void DefStatement::run(Block *parentBlock)
     }
 }
 
+
 // Function call
 FunCallExpression::FunCallExpression(const std::string &ID, const std::vector<Expression *> &args)
     : ID(ID), args(args)
@@ -466,6 +508,15 @@ FunCallExpression::~FunCallExpression()
 {
     for (auto arg : args)
         delete arg;
+}
+
+FunCallExpression *FunCallExpression::copy() const
+{
+    std::vector<Expression *> argsCopy;
+    for (auto arg : args)
+        argsCopy.push_back(arg->copy());
+
+    return new FunCallExpression(std::string(ID), argsCopy);
 }
 
 Var FunCallExpression::eval(Block *parentBlock)
@@ -509,6 +560,7 @@ const std::string &FunCallExpression::getID() const
     return ID;
 }
 
+
 ReturnStatement::ReturnStatement(Expression *value)
     : value(value)
 {}
@@ -516,6 +568,11 @@ ReturnStatement::ReturnStatement(Expression *value)
 ReturnStatement::~ReturnStatement()
 {
     delete value;
+}
+
+ReturnStatement *ReturnStatement::copy() const
+{
+    return new ReturnStatement(value->copy());
 }
 
 void ReturnStatement::print(unsigned int indent) const
@@ -529,6 +586,7 @@ void ReturnStatement::run(Block *parentBlock)
 {
     parentBlock->changeReturnValue(value->eval(parentBlock));
 }
+
 
 // Unary Expression
 UnaryExpression::UnaryExpression(const char *op, Expression *arg)
@@ -544,6 +602,11 @@ void UnaryExpression::print() const
 UnaryExpression::~UnaryExpression()
 {
     delete arg;
+}
+
+UnaryExpression *UnaryExpression::copy() const
+{
+    return new UnaryExpression(op, arg->copy());
 }
 
 Var UnaryExpression::eval(Block *parentBlock)
@@ -627,6 +690,11 @@ BinaryExpression::~BinaryExpression()
     delete arg2;
 }
 
+BinaryExpression *BinaryExpression::copy() const
+{
+    return new BinaryExpression(op, arg1->copy(), arg2->copy());
+}
+
 Var BinaryExpression::eval(Block *parentBlock)
 {
     Var result;
@@ -674,6 +742,11 @@ ArrayAtExpression::~ArrayAtExpression()
     delete index;
 }
 
+ArrayAtExpression *ArrayAtExpression::copy() const
+{
+    return new ArrayAtExpression(ID, index->copy());
+}
+
 Var ArrayAtExpression::eval(Block *parentBlock)
 {
     Var *sourceArr = parentBlock->findVar(ID);
@@ -698,6 +771,11 @@ ValueExpression::ValueExpression(const std::string &val)
 ValueExpression::~ValueExpression()
 {}
 
+ValueExpression *ValueExpression::copy() const
+{
+    return new ValueExpression(std::to_string(val));
+}
+
 void ValueExpression::print() const
 {
     std::cout << val;
@@ -708,6 +786,7 @@ Var ValueExpression::eval(Block *parentBlock)
     return Var(val);
 }
 
+
 // Variable Expression
 VarExpression::VarExpression(const std::string &ID)
     : ID(ID)
@@ -715,6 +794,11 @@ VarExpression::VarExpression(const std::string &ID)
 
 VarExpression::~VarExpression()
 {}
+
+VarExpression *VarExpression::copy() const
+{
+    return new VarExpression(std::string(ID));
+}
 
 void VarExpression::print() const
 {
@@ -733,6 +817,7 @@ Var VarExpression::eval(Block *parentBlock)
         throw UndefinedVarException(ID);
     return *thisVar;
 }
+
 
 Globals::Globals()
 {}
@@ -790,7 +875,7 @@ Var Function::eval(const std::vector<Var> &args, Block *globalBlock)
     body->clearVarTable();
     if (args.size() != params.size())
         throw InvalidFunctionCall("too many (few) arguments");
-    //body->addVar("#RESULT", new Var(returnType));
+
     for (size_t i = 0; i < params.size(); i++) {
         if (args[i].getType() == params[i]->getParamType())
             body->addVar(params[i]->getID(), new Var(args[i]));
@@ -798,6 +883,7 @@ Var Function::eval(const std::vector<Var> &args, Block *globalBlock)
             throw InvalidFunctionCall("invalid parameter's type (" + VTypeToString(args[i].getType()) +
                 "instead of " + VTypeToString(params[i]->getParamType()) + ")");
     }
+
     FunctionCall newCall(body, returnType, params, args);
     return newCall.execute(globalBlock);
 }
@@ -812,7 +898,7 @@ FunctionCall::FunctionCall(Block *oldBody,
                            const std::vector<Parameter *> &params,
                            const std::vector<Var> &args)
 {
-    body = new Block(*oldBody);
+    body = oldBody->copy();
     body->addVar("#RESULT", new Var(returnType));
     for (size_t i = 0; i < args.size(); i++)
         body->addVar(params[i]->getID(), new Var(args[i]));

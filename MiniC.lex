@@ -52,7 +52,7 @@ global                          return GLOBAL;
 
 [a-zA-Z_][a-zA-Z0-9_]*          {
                                     yylval.str = yytext;
-                                    return ID;
+                                    return IDENTIFIER;
                                 }
 
 [ \t\r\n]                       ; // whitespace
